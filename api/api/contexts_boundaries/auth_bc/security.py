@@ -34,12 +34,12 @@ def verify_password(plain: str, hashed: str, pepper: str) -> bool:
 
 
 # ── JWT ─────────────────────────────────────────────────────────────────────
-def issue_access_token(citizen_id: int, email: str, config: Config) -> tuple[str, int]:
+def issue_access_token(user_id: int, email: str, config: Config) -> tuple[str, int]:
     """Sign and return (token, expires_in_seconds)."""
     expires = timedelta(minutes=config.app.jwt_expires_minutes)
     now = datetime.now(tz=timezone.utc)
     payload = {
-        "sub": str(citizen_id),
+        "sub": str(user_id),
         "email": email,
         "iat": now,
         "exp": now + expires,

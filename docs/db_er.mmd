@@ -1,0 +1,75 @@
+erDiagram
+    alembic_version {
+        character_varying version_num PK 
+    }
+
+    auth_tokens {
+        timestamp_with_time_zone created_at 
+        timestamp_with_time_zone expires_at 
+        bigint id PK 
+        text kind 
+        text token_hash UK 
+        timestamp_with_time_zone used_at 
+        bigint user_id FK 
+    }
+
+    chat_conversations {
+        timestamp_with_time_zone created_at 
+        bigint id PK 
+        text title 
+        timestamp_with_time_zone updated_at 
+        bigint user_id FK 
+    }
+
+    chat_messages {
+        text content 
+        bigint conversation_id FK 
+        timestamp_with_time_zone created_at 
+        jsonb data 
+        bigint id PK 
+        text role 
+    }
+
+    city_events {
+        text address 
+        text category 
+        integer confirmations 
+        text contact_phone 
+        timestamp_with_time_zone created_at 
+        text description 
+        jsonb details 
+        text district 
+        timestamp_with_time_zone ends_at 
+        timestamp_with_time_zone expires_at 
+        bigint id PK 
+        text image_url 
+        double_precision lat 
+        double_precision lng 
+        text location_text 
+        bigint reporter_id FK 
+        timestamp_with_time_zone resolved_at 
+        text severity 
+        text source 
+        timestamp_with_time_zone starts_at 
+        text status 
+        text subtype 
+        text title 
+        text type 
+        timestamp_with_time_zone updated_at 
+        boolean verified 
+    }
+
+    users {
+        timestamp_with_time_zone created_at 
+        text email 
+        boolean email_confirmed 
+        bigint id PK 
+        text password_hash 
+        text phone 
+        timestamp_with_time_zone updated_at 
+    }
+
+    auth_tokens }o--|| users : "user_id"
+    chat_conversations }o--|| users : "user_id"
+    chat_messages }o--|| chat_conversations : "conversation_id"
+    city_events }o--|| users : "reporter_id"

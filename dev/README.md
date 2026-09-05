@@ -13,6 +13,7 @@ pipeline here (`pipeline_name = "dev/<name>"`).
 |------------------------|--------------|
 | `pypyr install`        | `poetry install` + pre-commit hooks + `pnpm install` in `ui/` |
 | `pypyr migrate`        | `alembic -c api/alembic.ini upgrade head` (needs Postgres up) |
+| `pypyr seed_events`    | ingest demo `city_events` (`dataset=<path>` to override, `geocode=1` to re-geocode via HERE) |
 | `pypyr start_tilt`     | `tilt up` — the whole stack in one command |
 | `pypyr start_api`      | REST API on `:8101` (role=api) |
 | `pypyr start_worker`   | Inngest worker on `:8103` (role=worker) |

@@ -1,7 +1,7 @@
 from pypika.queries import Table
 
-citizens_table = Table("citizens")
-# CREATE TABLE citizens (
+users_table = Table("users")
+# CREATE TABLE users (
 #     id              BIGSERIAL   PRIMARY KEY,
 #     email           TEXT        NOT NULL UNIQUE,
 #     password_hash   TEXT        NOT NULL,
@@ -10,4 +10,4 @@ citizens_table = Table("citizens")
 #     created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
 #     updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 # );
-# CREATE UNIQUE INDEX citizens_email_key ON citizens (lower(email));
+# CREATE UNIQUE INDEX users_email_key ON users (lower(email));

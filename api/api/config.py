@@ -5,7 +5,7 @@ Mirrors the imprv services: a single pydantic-settings `Config` tree loaded from
 
     CONFIG__POSTGRES__HOST=db
     CONFIG__OPENAI__API_KEY=sk-...
-    CONFIG__SPECIALIST__API_KEY=super-secret
+    CONFIG__HERE__API_KEY=super-secret
 
 Every sub-config with sensible defaults is optional so the stack boots in local
 dev with only Postgres configured.
@@ -38,46 +38,16 @@ class PostgresConfig(BaseModel):
 
 
 class AssistantConfig(BaseModel):
-    """City-maintenance Q&A assistant.
+    """The chat "answer" agent — general city Q&A inside a conversation."""
 
-    `dev_citizen_id` is the fixed citizen the API attributes requests to when no
-    `X-Citizen-Id` header is present (auth is a placeholder in this first draft).
-    """
-
-    dev_citizen_id: int = 1
     model: str = "gpt-5.4"
-    title_max_chars: int = 60
-
-
-class ReportsConfig(BaseModel):
-    """Citizen issue reports + the specialist HITL review loop.
-
-    `auto_publish_threshold` is reserved: a future iteration may let a triage
-    with confidence above it skip the queue. For now EVERY report waits for a
-    human specialist — the loop is always on.
-    """
-
-    triage_model: str = "gpt-5.4"
-    auto_publish_threshold: float = 1.1  # > 1.0 → effectively never auto-publish
-    default_department: str = "Centrum Zarządzania Kryzysowego"
-
-
-class SpecialistConfig(BaseModel):
-    """Auth for the specialist HITL console.
-
-    A single shared API key checked against the `X-Specialist-Key` header. Good
-    enough for the first draft; swap for real per-user auth (Auth0 / SSO) later.
-    """
-
-    api_key: str = "dev-specialist"
-    dev_specialist_id: str = "specialist-1"
 
 
 class AppConfig(BaseModel):
     """App-level auth + public-URL settings.
 
     `jwt_secret` / `password_pepper` MUST be overridden in any real deployment
-    (see `.env`). `ui_base_url` is the public origin of the citizen Next.js app
+    (see `.env`). `ui_base_url` is the public origin of the user Next.js app
     — email confirmation / password-reset links point back into it.
     """
 
@@ -121,8 +91,6 @@ class Config(BaseSettings):
     postgres: PostgresConfig
     openai: OpenAIConfig = OpenAIConfig()
     assistant: AssistantConfig = AssistantConfig()
-    reports: ReportsConfig = ReportsConfig()
-    specialist: SpecialistConfig = SpecialistConfig()
     app: AppConfig = AppConfig()
     resend: ResendConfig = ResendConfig()
     here: HereConfig = HereConfig()

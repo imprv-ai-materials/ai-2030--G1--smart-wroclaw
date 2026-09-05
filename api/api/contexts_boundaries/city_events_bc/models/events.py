@@ -12,12 +12,14 @@ from pydantic import BaseModel, Field
 
 
 class CityEvent(BaseModel):
-    """A geolocated thing happening in the city — the unit the citizen map and
+    """A geolocated thing happening in the city — the unit the user map and
     the "aktywne zdarzenia" list render.
 
-    Deliberately broader than `IssueReport`: an event may be a citizen-reported
-    fault (ISSUE), a city ALARM, a VENUE/event, or a business PROMOTION. Position
-    is `(lat, lng)`; anything without coordinates simply isn't drawn on the map.
+    An event may be a user-reported fault (ISSUE), a city ALARM, a VENUE/event,
+    or a business PROMOTION. Position is `(lat, lng)`; anything without
+    coordinates simply isn't drawn on the map. Every event is owned by a
+    `reporter_id` (a `users` row) — a real resident for user/business events, or
+    the seeded system "City" account for municipal ones.
     """
 
     id: int
@@ -32,7 +34,7 @@ class CityEvent(BaseModel):
     lat: float | None = None
     lng: float | None = None
     source: EventSource = EventSource.CITY
-    reporter_id: int | None = None
+    reporter_id: int
     starts_at: datetime | None = None
     ends_at: datetime | None = None
     # Structured / reportable fields (migration 0005). `subtype` refines within a
@@ -64,7 +66,7 @@ class CityEvent(BaseModel):
             lat=data.get("lat"),
             lng=data.get("lng"),
             source=EventSource(data.get("source") or EventSource.CITY.value),
-            reporter_id=data.get("reporter_id"),
+            reporter_id=data["reporter_id"],
             starts_at=data.get("starts_at"),
             ends_at=data.get("ends_at"),
             subtype=data.get("subtype"),

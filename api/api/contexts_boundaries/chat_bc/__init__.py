@@ -3,6 +3,6 @@ from api.contexts_boundaries.chat_bc.models import (
     ChatMessage,
     ChatRole,
 )
-from api.contexts_boundaries.chat_bc.repository import ChatRepository
+from api.contexts_boundaries.chat_bc.repositories import ChatRepository
 
 __all__ = ["ChatConversation", "ChatMessage", "ChatRole", "ChatRepository"]

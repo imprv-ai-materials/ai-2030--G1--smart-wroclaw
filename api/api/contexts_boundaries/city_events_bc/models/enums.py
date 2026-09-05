@@ -18,31 +18,8 @@ class Severity(StrEnum):
     CRITICAL = "CRITICAL"
 
 
-class ReportStatus(StrEnum):
-    # Citizen just filed it; triage event fired.
-    SUBMITTED = "SUBMITTED"
-    # AI triage in progress on the worker.
-    TRIAGING = "TRIAGING"
-    # Triage done — waiting in the specialist's HITL review queue.
-    PENDING_REVIEW = "PENDING_REVIEW"
-    # Specialist approved (kept as an explicit state for audit; PUBLISHED is the
-    # citizen-visible terminal state).
-    APPROVED = "APPROVED"
-    # Specialist rejected — not acted on.
-    REJECTED = "REJECTED"
-    # Approved and the response is visible to the citizen.
-    PUBLISHED = "PUBLISHED"
-    # Triage crashed; a specialist can still review the raw report.
-    FAILED = "FAILED"
-
-
-class ReviewDecision(StrEnum):
-    APPROVE = "APPROVE"
-    REJECT = "REJECT"
-
-
 class EventType(StrEnum):
-    """What a `city_events` row represents on the citizen map.
+    """What a `city_events` row represents on the user map.
 
     The top layer of the event model: it drives the map glyph, the badge icon
     and the top-level filter, so it stays a small closed set. Finer distinctions
@@ -71,5 +48,5 @@ class EventSource(StrEnum):
     """Who filed the event."""
 
     CITY = "CITY"  # miasto / urząd
-    CITIZEN = "CITIZEN"  # mieszkaniec
+    USER = "USER"  # mieszkaniec
     BUSINESS = "BUSINESS"  # firma

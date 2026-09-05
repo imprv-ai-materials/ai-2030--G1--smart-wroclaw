@@ -17,8 +17,8 @@ city_events_table = Table("city_events")
 #     address       TEXT,
 #     lat           DOUBLE PRECISION,
 #     lng           DOUBLE PRECISION,
-#     source        TEXT        NOT NULL DEFAULT 'CITY' CHECK (source IN ('CITY','CITIZEN','BUSINESS')),
-#     reporter_id   BIGINT,             -- citizens.id when source = CITIZEN/BUSINESS
+#     source        TEXT        NOT NULL DEFAULT 'CITY' CHECK (source IN ('CITY','USER','BUSINESS')),
+#     reporter_id   BIGINT,             -- users.id when source = USER/BUSINESS
 #     starts_at     TIMESTAMPTZ,
 #     ends_at       TIMESTAMPTZ,
 #     -- structured / reportable columns (migration 0005):

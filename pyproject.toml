@@ -65,10 +65,13 @@ linter_exclude = ".venv,migrations"
 # Host port of the Inngest dev server (compose.yaml maps 8488:8288). The API +
 # worker point at it via INNGEST_DEV so no signing key is needed locally.
 inngest_dev_url = "http://127.0.0.1:8488"
+# Default demo dataset for `pypyr seed_events` (override with dataset=<path>).
+seed_dataset = "api/tests/manual/fake_events.json"
 
 [tool.pypyr.shortcuts]
 install = { pipeline_name = "dev/install" }
 migrate = { pipeline_name = "dev/migrate" }
+seed_events = { pipeline_name = "dev/seed_events" }
 start_tilt = { pipeline_name = "dev/start_tilt" }
 start_api = { pipeline_name = "dev/start_api" }
 start_worker = { pipeline_name = "dev/start_worker" }
@@ -78,6 +81,7 @@ check_format = { pipeline_name = "dev/check_format" }
 lint = { pipeline_name = "dev/lint" }
 test = { pipeline_name = "dev/test" }
 precommit = { pipeline_name = "dev/precommit" }
+render_er = { pipeline_name = "dev/render_db_er_diagram" }
 
 [tool.black]
 line-length = 120

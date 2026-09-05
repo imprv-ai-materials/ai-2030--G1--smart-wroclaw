@@ -1,4 +1,4 @@
-"""EventsService against a real Postgres — the citizen map feed.
+"""EventsService against a real Postgres — the user map feed.
 
 Shows the integration conventions: `BaseIntegrationTestCase`, state built with
 the `db_agg_factory` fluent builder, `parameterized.expand` cases even for
@@ -82,8 +82,8 @@ class TestEventsServiceExpiry(BaseIntegrationTestCase):
 
     def test_create_event__defaults_expiry_to_ttl(self) -> None:
         # GIVEN a resident
-        agg = self.db_agg_factory.create().create_citizen("resident")
-        resident = agg.get("citizens", "resident")
+        agg = self.db_agg_factory.create().create_user("resident")
+        resident = agg.get("users", "resident")
 
         # WHEN they file an event without an explicit expiry
         before = _now()
@@ -103,12 +103,12 @@ class TestEventsServiceProlong(BaseIntegrationTestCase):
     def _authored_event(self, **kwargs) -> tuple[dict, dict]:
         agg = (
             self.db_agg_factory.create()
-            .create_citizen("author")
+            .create_user("author")
             .create_city_event(
-                "event", reporter_label="author", source=EventSource.CITIZEN, **kwargs
+                "event", reporter_label="author", source=EventSource.USER, **kwargs
             )
         )
-        return agg.get("citizens", "author"), agg.get("city_events", "event")
+        return agg.get("users", "author"), agg.get("city_events", "event")
 
     def test_prolong__author__pushes_expiry_out(self) -> None:
         # GIVEN an author's event that still has a little time left
@@ -136,8 +136,8 @@ class TestEventsServiceProlong(BaseIntegrationTestCase):
     def test_prolong__non_author__access_denied(self) -> None:
         # GIVEN an event authored by someone else
         _, event = self._authored_event(expires_at=_now() + timedelta(hours=1))
-        other = self.db_agg_factory.create().create_citizen("intruder").get(
-            "citizens", "intruder"
+        other = self.db_agg_factory.create().create_user("intruder").get(
+            "users", "intruder"
         )
 
         # WHEN a different resident tries to prolong it
@@ -167,10 +167,10 @@ class TestEventsServiceGetEvent(BaseIntegrationTestCase):
 
 
 class TestEventsServiceCreateEvent(BaseIntegrationTestCase):
-    def test_create_event__citizen_report__persists_and_attributes(self) -> None:
+    def test_create_event__user_report__persists_and_attributes(self) -> None:
         # GIVEN a resident
-        agg = self.db_agg_factory.create().create_citizen("resident")
-        resident = agg.get("citizens", "resident")
+        agg = self.db_agg_factory.create().create_user("resident")
+        resident = agg.get("users", "resident")
 
         # WHEN they file an event
         event = self.events_service.create_event(

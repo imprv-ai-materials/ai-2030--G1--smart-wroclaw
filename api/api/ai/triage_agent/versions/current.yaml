@@ -1,6 +1,0 @@
-# CURRENT — which version of triage_agent the app runs.
-# The loader imports `api.ai.triage_agent.versions.<version>` and uses its
-# AGENT class. Promote by changing `version`; no code change.
-version: v1
-# Optional per-deployment model override; null → the version's default / config.
-model: null

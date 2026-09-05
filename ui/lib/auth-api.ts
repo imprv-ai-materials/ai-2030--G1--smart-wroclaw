@@ -1,5 +1,5 @@
 /**
- * Typed client for citizen authentication (email + password + email
+ * Typed client for user authentication (email + password + email
  * confirmation). The JWT returned by `login` is stored via `lib/auth`; authed
  * calls attach it as a bearer token (see `lib/api-client`).
  */

@@ -109,23 +109,8 @@ def events_repository(bootstrap):
 
 
 @pytest.fixture
-def reports_service(bootstrap):
-    return bootstrap.reports_service
-
-
-@pytest.fixture
-def reports_repository(bootstrap):
-    return bootstrap.reports_repository
-
-
-@pytest.fixture
-def conversations_service(bootstrap):
-    return bootstrap.conversations_service
-
-
-@pytest.fixture
-def conversations_repository(bootstrap):
-    return bootstrap.conversations_repository
+def chat_repository(bootstrap):
+    return bootstrap.chat_repository
 
 
 @pytest.fixture
@@ -134,5 +119,5 @@ def auth_service(bootstrap):
 
 
 @pytest.fixture
-def citizens_repository(bootstrap):
-    return bootstrap.citizens_repository
+def users_repository(bootstrap):
+    return bootstrap.users_repository

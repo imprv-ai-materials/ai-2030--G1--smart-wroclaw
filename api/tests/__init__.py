@@ -124,12 +124,9 @@ class BaseIntegrationTestCase(BaseTestCase):
         # services + repositories, pulled off the container (see conftest.py)
         events_service,
         events_repository,
-        reports_service,
-        reports_repository,
-        conversations_service,
-        conversations_repository,
+        chat_repository,
         auth_service,
-        citizens_repository,
+        users_repository,
     ) -> None:
         self.config = config
         self.mocker = mocker
@@ -141,12 +138,9 @@ class BaseIntegrationTestCase(BaseTestCase):
 
         self.events_service = events_service
         self.events_repository = events_repository
-        self.reports_service = reports_service
-        self.reports_repository = reports_repository
-        self.conversations_service = conversations_service
-        self.conversations_repository = conversations_repository
+        self.chat_repository = chat_repository
         self.auth_service = auth_service
-        self.citizens_repository = citizens_repository
+        self.users_repository = users_repository
 
         # Fresh state per test, then a client bound to the (already-imported) app.
         self.db_factory.clear()

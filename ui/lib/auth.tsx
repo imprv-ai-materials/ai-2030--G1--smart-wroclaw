@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Citizen auth: a small context over the JWT stored in localStorage. The token
+ * User auth: a small context over the JWT stored in localStorage. The token
  * lives under `sw_token` (see `lib/api-client`) and is read via
  * `useSyncExternalStore`, so it stays in sync across tabs and never mismatches
  * during hydration. `user` is loaded from `GET /auth/me` while a token is

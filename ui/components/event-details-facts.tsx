@@ -2,7 +2,7 @@
  * Renders the structured, "reportable" side of a CityEvent: the top-level chips
  * (category / severity / subtype / district) plus the per-type `details` JSONB,
  * with human Polish labels. This is what turns an event from free text into
- * something a citizen can read at a glance — and the app can aggregate.
+ * something a user can read at a glance — and the app can aggregate.
  */
 
 import {

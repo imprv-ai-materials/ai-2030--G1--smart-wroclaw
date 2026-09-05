@@ -17,4 +17,6 @@ steps:
   - name: pypyr.steps.cmd
     description: Starting Inngest worker on :8103
     in:
-      cmd: poetry run uvicorn api.main:app --host 0.0.0.0 --reload --port 8103
+      # See start_api.yaml: `--app-dir api` fixes `api.main` import shadowing,
+      # `--reload-dir api/api` keeps the reloader off ui/node_modules.
+      cmd: poetry run uvicorn api.main:app --app-dir api --reload --reload-dir api/api --host 0.0.0.0 --port 8103

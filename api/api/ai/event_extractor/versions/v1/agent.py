@@ -178,11 +178,11 @@ class EventExtractor(AbstractEventExtractor):
     def extract(
         self,
         text: str,
-        citizen_category: ReportCategory | None = None,
+        user_category: ReportCategory | None = None,
         history: list[dict[str, str]] | None = None,
     ) -> EventUnderstanding:
         if not self._client.is_configured:
-            return self._offline_extract(text, citizen_category)
+            return self._offline_extract(text, user_category)
 
         convo = ""
         if history:
@@ -195,7 +195,7 @@ class EventExtractor(AbstractEventExtractor):
             f"{convo}"
             f"Najnowsza wiadomość mieszkańca: {text}\n"
             f"Kategoria wskazana przez mieszkańca: "
-            f"{citizen_category.value if citizen_category else 'brak'}\n"
+            f"{user_category.value if user_category else 'brak'}\n"
             "Wydobądź JEDNO zdarzenie z całej rozmowy — akumuluj informacje z "
             "wcześniejszych wiadomości (np. lokalizację podaną wcześniej)."
         )
@@ -212,15 +212,15 @@ class EventExtractor(AbstractEventExtractor):
         return result
 
     def _offline_extract(
-        self, text: str, citizen_category: ReportCategory | None
+        self, text: str, user_category: ReportCategory | None
     ) -> EventUnderstanding:
         low = text.lower()
         matched = _dedupe(
             [cat for keywords, cat in _KEYWORDS if any(k in low for k in keywords)]
         )
 
-        if citizen_category is not None:
-            category = citizen_category
+        if user_category is not None:
+            category = user_category
             secondary = [c for c in matched if c != category]
             confidence = 0.40
             rationale = "kategoria wskazana przez mieszkańca (heurystyka offline)"

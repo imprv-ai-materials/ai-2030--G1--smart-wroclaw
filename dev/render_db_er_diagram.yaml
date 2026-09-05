@@ -1,0 +1,50 @@
+context_parser: pypyr.parser.keyvaluepairs
+steps:
+  - pypyr.steps.debug
+  - pypyr.steps.configvars
+
+  - name: pypyr.steps.default
+    description: >
+      output basename for the generated files (override with
+      `pypyr render_er out=docs/schema`). Produces {{out}}.mmd and {{out}}.svg.
+    in:
+      defaults:
+        out: docs/db_er
+
+  - name: pypyr.steps.shell
+    description: >
+      Render the public schema to a Mermaid ER diagram ({out}.mmd).
+
+      Reads CONFIG__POSTGRES__* straight from api/.env (the same values docker
+      compose uses to provision the db), so Postgres must be reachable first —
+      `pypyr start_tilt` or `docker compose --env-file api/.env up -d db`.
+    in:
+      cmd: |
+        set -a
+        eval "$(grep -E '^CONFIG__POSTGRES__(HOST|PORT|USER|PASSWORD|DB)=' api/.env)"
+        set +a
+        "$HOME/go/bin/mermerd" \
+          --connectionString "postgresql://$CONFIG__POSTGRES__USER:$CONFIG__POSTGRES__PASSWORD@$CONFIG__POSTGRES__HOST:$CONFIG__POSTGRES__PORT/$CONFIG__POSTGRES__DB" \
+          --schema public \
+          --useAllTables \
+          --outputFileName {out}.mmd
+
+  - name: pypyr.steps.cmd
+    description: >
+      Append fuzzy (non-FK-constraint) relationships inferred from *_id column
+      names, so links that live only in application code still appear on the
+      diagram.
+    in:
+      cmd: poetry run python dev/add_non_constraint_relationship.py {out}.mmd
+
+  - name: pypyr.steps.cmd
+    description: Render the Mermaid diagram to SVG ({out}.svg).
+    in:
+      cmd: mmdc -i {out}.mmd -o {out}.svg
+
+on_failure:
+  - name: pypyr.steps.echo
+    in:
+      echoMe: >
+        Failed to render the ER diagram. Is Postgres up on the port in api/.env?
+        Bring it up with `docker compose --env-file api/.env up -d db`, then retry.

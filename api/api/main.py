@@ -1,9 +1,9 @@
 """FastAPI entrypoint — runs in one of three roles (env `SMART_WROCLAW_ROLE`).
 
-The same app powers both the citizen-facing REST API and the Inngest worker;
-which surfaces get mounted is decided by the role so a burst of background AI
-jobs (report triage, assistant answers) on the worker can't starve the uvicorn
-workers serving interactive `/api/v1` traffic.
+The same app powers both the user-facing REST API and the Inngest worker;
+which surfaces get mounted is decided by the role so a burst of background jobs
+(chat turns, HERE geocoding) on the worker can't starve the uvicorn workers
+serving interactive `/api/v1` traffic.
 
     SMART_WROCLAW_ROLE=api     → REST routers only            (default port 8101)
     SMART_WROCLAW_ROLE=worker  → /api/inngest function host   (default port 8103)
@@ -17,21 +17,12 @@ import os
 
 import inngest.fast_api
 from api.bootstrap import get_bootstrap
-from api.contexts_boundaries.assistant_bc.inngest_functions import ASSISTANT_INNGEST_FUNCTIONS
-from api.contexts_boundaries.assistant_bc.rest import conversations_router
-from api.contexts_boundaries.auth_bc.auth import auth_router
-from api.contexts_boundaries.city_events_bc.inngest_functions import (
-    EVENTS_INNGEST_FUNCTIONS,
-    REPORTS_INNGEST_FUNCTIONS,
-)
-from api.contexts_boundaries.city_events_bc.rest import (
-    events_router,
-    reports_router,
-    specialist_router,
-)
-from api.chat_rest import chat_router
+from api.contexts_boundaries.auth_bc.router import auth_router
+from api.contexts_boundaries.chat_bc.inngest_functions import CHAT_INNGEST_FUNCTIONS
+from api.contexts_boundaries.chat_bc.router import chat_router
+from api.contexts_boundaries.city_events_bc.inngest_functions import EVENTS_INNGEST_FUNCTIONS
+from api.contexts_boundaries.city_events_bc.router import events_router
 from api.inngest_app import inngest_client
-from api.orchestrator import CHAT_INNGEST_FUNCTIONS
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -68,8 +59,6 @@ if SERVE_WORKER:
         app,
         inngest_client,
         [
-            *ASSISTANT_INNGEST_FUNCTIONS,
-            *REPORTS_INNGEST_FUNCTIONS,
             *EVENTS_INNGEST_FUNCTIONS,
             *CHAT_INNGEST_FUNCTIONS,
         ],
@@ -83,10 +72,7 @@ if SERVE_WORKER:
 #
 if SERVE_REST:
     app.include_router(auth_router, prefix=API_PREFIX)
-    app.include_router(conversations_router, prefix=API_PREFIX)
     app.include_router(events_router, prefix=API_PREFIX)
-    app.include_router(reports_router, prefix=API_PREFIX)
-    app.include_router(specialist_router, prefix=API_PREFIX)
     app.include_router(chat_router, prefix=API_PREFIX)
 
     @app.websocket("/ws/{topic}")

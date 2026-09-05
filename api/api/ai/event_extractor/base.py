@@ -27,12 +27,12 @@ class AbstractEventExtractor(ABC):
     def extract(
         self,
         text: str,
-        citizen_category: ReportCategory | None = None,
+        user_category: ReportCategory | None = None,
         history: list[dict[str, str]] | None = None,
     ) -> EventUnderstanding:
-        """Read `text` (open text a citizen typed) into a structured proposal.
+        """Read `text` (open text a user typed) into a structured proposal.
 
-        `citizen_category` — when the reporter pre-selected one — is a strong hint
+        `user_category` — when the reporter pre-selected one — is a strong hint
         the agent should usually respect. `history` (prior conversation turns, each
         `{role, content}`) lets the extractor accumulate an event across turns.
         """

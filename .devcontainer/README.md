@@ -17,7 +17,7 @@ the `devcontainer` CLI).
    app from two terminals:
 
    ```bash
-   poetry run uvicorn api.main:app --host 0.0.0.0 --reload --port 8101   # REST + worker
+   poetry run uvicorn api.main:app --app-dir api --host 0.0.0.0 --reload --port 8101   # REST + worker
    pnpm --dir ui dev                                                     # UI
    ```
 

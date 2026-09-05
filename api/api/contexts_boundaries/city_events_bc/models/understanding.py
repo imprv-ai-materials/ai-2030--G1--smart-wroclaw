@@ -1,4 +1,4 @@
-"""EventUnderstanding — the structured reading of an open-text citizen message.
+"""EventUnderstanding — the structured reading of an open-text user message.
 
 Produced by the `event_extractor` agent (open text → this one object), then fed
 to two PURE projections that both chat tools consume:

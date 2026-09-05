@@ -2,23 +2,17 @@
  * Thin fetch wrapper for the Smart Wrocław backend.
  *
  * Every request targets `${NEXT_PUBLIC_API_URL}` (default
- * http://localhost:8101/api/v1) and carries the dev auth headers:
- *   - `X-Citizen-Id: 1` on every call
- *   - `X-Specialist-Key: dev-specialist` additionally on specialist (HITL) calls
+ * http://localhost:8101/api/v1). Authenticated calls (`{ auth: true }`) attach
+ * `Authorization: Bearer <jwt>` from localStorage; everything else is public.
  *
  * Non-2xx responses throw `APIError`; 204 / non-JSON bodies resolve to
- * `undefined`. Swap the dev headers for real auth before shipping.
+ * `undefined`.
  */
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8101/api/v1";
 
-// Dev-mode identity for the legacy assistant/report endpoints. Real auth for
-// citizens goes through the JWT stored under `TOKEN_KEY` (see below).
-const CITIZEN_ID = "1";
-const SPECIALIST_KEY = "dev-specialist";
-
 // -- JWT storage (localStorage) ----------------------------------------------
-// Single source of truth for the citizen auth token. Re-exported from
+// Single source of truth for the user auth token. Re-exported from
 // `lib/auth` as getToken/setToken/clearToken to match the public API.
 export const TOKEN_KEY = "sw_token";
 
@@ -94,9 +88,7 @@ export class APIError extends Error {
 }
 
 type RequestOptions = {
-  /** Also send the specialist key header (HITL / review endpoints). */
-  specialist?: boolean;
-  /** Attach `Authorization: Bearer <token>` from localStorage (citizen auth). */
+  /** Attach `Authorization: Bearer <token>` from localStorage (user auth). */
   auth?: boolean;
 };
 
@@ -106,8 +98,7 @@ async function request<T>(
   body?: unknown,
   options?: RequestOptions,
 ): Promise<T> {
-  const headers: Record<string, string> = { "X-Citizen-Id": CITIZEN_ID };
-  if (options?.specialist) headers["X-Specialist-Key"] = SPECIALIST_KEY;
+  const headers: Record<string, string> = {};
   if (options?.auth) {
     const token = getToken();
     if (token) headers["Authorization"] = `Bearer ${token}`;

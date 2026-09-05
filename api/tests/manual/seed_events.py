@@ -1,17 +1,22 @@
-"""Seed the `city_events` table with demo events for the citizen map.
+"""Seed the `city_events` table with demo events for the user map.
 
-Loads `api/datasets/fake_events.json` and ingests it through the EventsService
+Loads the sibling `fake_events.json` and ingests it through the EventsService
 (same validation/normalisation the REST ingest uses). Idempotency is NOT
 attempted — re-running appends another copy, so it's a demo/dev convenience.
 
-Run from the project root (smart_wroclaw/):
+Run from the project root (smart_wroclaw/) — usually via the pypyr shortcut:
 
-    poetry run python api/scripts/seed_events.py
+    pypyr seed_events
     # or against a JSON file of your choosing:
-    poetry run python api/scripts/seed_events.py path/to/events.json
+    pypyr seed_events dataset=path/to/events.json
 
-Requires a reachable Postgres + applied migrations (`pypyr migrate`). With no
-Resend key configured this touches no network — it only writes rows.
+which wraps the direct invocation:
+
+    poetry run python api/tests/manual/seed_events.py [path/to/events.json]
+
+Requires a reachable Postgres + applied migrations (`pypyr migrate`). This
+touches no network — it only writes rows (coordinates come straight from the
+JSON; run `pypyr seed_events geocode=1` to re-geocode them through HERE).
 """
 
 from __future__ import annotations

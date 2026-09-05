@@ -15,7 +15,6 @@ from api.adapters.llm import OpenAIClient
 from api.ai import load_current
 from api.ai.assistant_agent import AbstractAssistantAgent
 from api.ai.event_extractor import AbstractEventExtractor
-from api.ai.triage_agent import AbstractTriageAgent
 from api.config import Config
 
 
@@ -28,12 +27,3 @@ def get_event_extractor(openai_client: OpenAIClient, config: Config) -> Abstract
     current = load_current("event_extractor")
     # No dedicated config knob yet: fall back to the shared OpenAI default model.
     return current.agent_class(openai_client, model=current.model or config.openai.default_model_name)
-
-
-def get_triage_agent(openai_client: OpenAIClient, config: Config) -> AbstractTriageAgent:
-    current = load_current("triage_agent")
-    return current.agent_class(
-        openai_client,
-        model=current.model or config.reports.triage_model,
-        default_department=config.reports.default_department,
-    )

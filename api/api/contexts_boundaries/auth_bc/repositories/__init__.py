@@ -3,13 +3,13 @@ from api.contexts_boundaries.auth_bc.repositories.auth_tokens import (
     AuthTokensRepository,
 )
 from api.contexts_boundaries.auth_bc.repositories.users import (
-    AbstractCitizensRepository,
-    CitizensRepository,
+    AbstractUsersRepository,
+    UsersRepository,
 )
 
 __all__ = [
     "AbstractAuthTokensRepository",
-    "AbstractCitizensRepository",
+    "AbstractUsersRepository",
     "AuthTokensRepository",
-    "CitizensRepository",
+    "UsersRepository",
 ]

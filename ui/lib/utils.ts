@@ -17,7 +17,7 @@ export function formatDateTime(value?: string | null): string | null {
 }
 
 export type ExpiryInfo = {
-  /** The event has an expiry window at all (citizen-filed events do). */
+  /** The event has an expiry window at all (user-filed events do). */
   hasExpiry: boolean;
   /** Its window has already lapsed — it's off the public map. */
   expired: boolean;

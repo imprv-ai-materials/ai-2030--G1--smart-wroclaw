@@ -18,4 +18,8 @@ steps:
   - name: pypyr.steps.cmd
     description: Starting API (REST) on :8101
     in:
-      cmd: poetry run uvicorn api.main:app --host 0.0.0.0 --reload --port 8101
+      # `--app-dir api` puts api/ on sys.path so `api.main` resolves to the real
+      # package (api/api); without it the local api/ folder shadows it and uvicorn
+      # fails with "Could not import module api.main". `--reload-dir api/api` scopes
+      # the watcher to source so it doesn't churn on ui/node_modules.
+      cmd: poetry run uvicorn api.main:app --app-dir api --reload --reload-dir api/api --host 0.0.0.0 --port 8101

@@ -1,8 +1,7 @@
 """The /api/v1/events HTTP surface, driven end-to-end with the TestClient.
 
-Covers the three auth modes the router exposes: a public GET feed, an
-authenticated (JWT + confirmed-email) citizen write, and the shared-secret
-specialist ingest.
+Covers the auth modes the router exposes: a public GET feed and an authenticated
+(JWT + confirmed-email) user write / prolong.
 """
 
 from datetime import datetime, timedelta, timezone
@@ -35,10 +34,10 @@ class TestEventsFeedApi(BaseIntegrationTestCase):
 
 class TestCreateEventApi(BaseIntegrationTestCase):
     def _resident(self, *, email_confirmed: bool) -> dict:
-        agg = self.db_agg_factory.create().create_citizen("resident", email_confirmed=email_confirmed)
-        return agg.get("citizens", "resident")
+        agg = self.db_agg_factory.create().create_user("resident", email_confirmed=email_confirmed)
+        return agg.get("users", "resident")
 
-    def test_post_event__confirmed_citizen__201_and_attributed(self) -> None:
+    def test_post_event__confirmed_user__201_and_attributed(self) -> None:
         # GIVEN a logged-in, email-confirmed resident
         resident = self._resident(email_confirmed=True)
         headers = auth_headers(resident["id"], resident["email"], self.config)
@@ -54,11 +53,11 @@ class TestCreateEventApi(BaseIntegrationTestCase):
             },
         )
 
-        # THEN it is created, attributed to them, sourced as a citizen report
+        # THEN it is created, attributed to them, sourced as a user report
         assert response.status_code == 201
         body = response.json()
         assert body["reporter_id"] == resident["id"]
-        assert body["source"] == "CITIZEN"
+        assert body["source"] == "USER"
 
     def test_post_event__unconfirmed_email__403(self) -> None:
         # GIVEN a resident who hasn't confirmed their email
@@ -92,15 +91,15 @@ class TestProlongEventApi(BaseIntegrationTestCase):
         # GIVEN a confirmed resident with an event about to lapse
         agg = (
             self.db_agg_factory.create()
-            .create_citizen("author", email_confirmed=True)
+            .create_user("author", email_confirmed=True)
             .create_city_event(
                 "event",
                 reporter_label="author",
-                source=EventSource.CITIZEN,
+                source=EventSource.USER,
                 expires_at=_now() + timedelta(minutes=30),
             )
         )
-        author = agg.get("citizens", "author")
+        author = agg.get("users", "author")
         event = agg.get("city_events", "event")
         headers = auth_headers(author["id"], author["email"], self.config)
 
@@ -116,13 +115,13 @@ class TestProlongEventApi(BaseIntegrationTestCase):
         # GIVEN an event authored by one resident
         agg = (
             self.db_agg_factory.create()
-            .create_citizen("author")
-            .create_citizen("intruder", email_confirmed=True)
+            .create_user("author")
+            .create_user("intruder", email_confirmed=True)
             .create_city_event(
-                "event", reporter_label="author", source=EventSource.CITIZEN
+                "event", reporter_label="author", source=EventSource.USER
             )
         )
-        intruder = agg.get("citizens", "intruder")
+        intruder = agg.get("users", "intruder")
         event = agg.get("city_events", "event")
         headers = auth_headers(intruder["id"], intruder["email"], self.config)
 
@@ -134,8 +133,8 @@ class TestProlongEventApi(BaseIntegrationTestCase):
 
     def test_prolong__missing_event__404(self) -> None:
         # GIVEN a confirmed resident
-        agg = self.db_agg_factory.create().create_citizen("resident", email_confirmed=True)
-        resident = agg.get("citizens", "resident")
+        agg = self.db_agg_factory.create().create_user("resident", email_confirmed=True)
+        resident = agg.get("users", "resident")
         headers = auth_headers(resident["id"], resident["email"], self.config)
 
         # WHEN they prolong an event that doesn't exist
@@ -143,30 +142,3 @@ class TestProlongEventApi(BaseIntegrationTestCase):
 
         # THEN it 404s
         assert response.status_code == 404
-
-
-class TestIngestEventsApi(BaseIntegrationTestCase):
-    def test_ingest__specialist_key__201(self) -> None:
-        # GIVEN the shared specialist key
-        headers = {"X-Specialist-Key": self.config.specialist.api_key}
-
-        # WHEN a batch of events is bulk-ingested
-        response = self.client.post(
-            "/api/v1/events/ingest",
-            headers=headers,
-            json={"events": [{"type": "ALARM", "title": "Ostrzeżenie pogodowe", "description": "Silny wiatr"}]},
-        )
-
-        # THEN the events are created
-        assert response.status_code == 201
-        assert len(response.json()["events"]) == 1
-
-    def test_ingest__wrong_key__403(self) -> None:
-        # GIVEN a bad specialist key
-        headers = {"X-Specialist-Key": "not-the-key"}
-
-        # WHEN ingesting
-        response = self.client.post("/api/v1/events/ingest", headers=headers, json={"events": []})
-
-        # THEN it is rejected
-        assert response.status_code == 403

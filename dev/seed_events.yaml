@@ -1,0 +1,43 @@
+context_parser: pypyr.parser.keyvaluepairs
+steps:
+  - pypyr.steps.debug
+  - pypyr.steps.configvars
+
+  - name: pypyr.steps.env
+    description: >
+      Put api/ on sys.path so the scripts can `import api.*` — the package lives
+      at api/api (uvicorn does the same via `--app-dir api`).
+    in:
+      env:
+        set:
+          PYTHONPATH: 'api'
+
+  - name: pypyr.steps.default
+    description: set default values for optional cli inputs
+    in:
+      defaults:
+        dataset: '{seed_dataset}'
+        geocode: False
+
+  - name: pypyr.steps.cmd
+    description: >
+      Seeding city_events from the demo dataset via EventsService.ingest
+      (the same validation/normalisation the REST /events/ingest uses).
+
+      Needs Postgres up + migrations applied — run `pypyr migrate` first. NOT
+      idempotent: re-running appends another copy of every row.
+
+      Point it at a different file with
+      `pypyr seed_events dataset=path/to/events.json`.
+    in:
+      cmd: poetry run python api/tests/manual/seed_events.py {dataset}
+
+  - name: pypyr.steps.cmd
+    run: '{geocode}'
+    description: >
+      Re-geocoding every event through HERE (backfill_coords.py) so the seed's
+      hand-placed lat/lng snap to their real addresses. Opt in with
+      `pypyr seed_events geocode=1`; needs CONFIG__HERE__API_KEY in env/.env
+      (backfill exits early if it's unset).
+    in:
+      cmd: poetry run python api/tests/manual/backfill_coords.py

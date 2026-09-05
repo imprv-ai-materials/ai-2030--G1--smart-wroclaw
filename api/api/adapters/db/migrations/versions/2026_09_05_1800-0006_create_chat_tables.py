@@ -5,7 +5,7 @@ Revises: 0005_city_events_extra
 Create Date: 2026-09-05 18:00:00.000000
 
 The unified chat ("main agent") stores every turn. Conversations are ANONYMOUS
-(`citizen_id` NULL) until the resident logs in — filing an event requires auth,
+(`user_id` NULL) until the resident logs in — filing an event requires auth,
 at which point the account is stamped onto the conversation.
 """
 
@@ -21,13 +21,13 @@ def upgrade() -> None:
     execute("""
         CREATE TABLE chat_conversations (
             id          BIGSERIAL PRIMARY KEY,
-            citizen_id  BIGINT,
+            user_id     BIGINT REFERENCES users (id) ON DELETE SET NULL,
             title       TEXT,
             created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
             updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
         );
         """)
-    execute("CREATE INDEX chat_conversations_citizen_id_idx ON chat_conversations (citizen_id);")
+    execute("CREATE INDEX chat_conversations_user_id_idx ON chat_conversations (user_id);")
 
     execute("""
         CREATE TABLE chat_messages (

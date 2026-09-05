@@ -6,12 +6,11 @@ import the same client without a circular import through `api.py`.
 
 Event names are the single source of truth for the async seams:
 
-    smart_wroclaw/assistant.run     a citizen asked a question → answer it
-    smart_wroclaw/report.triage     a citizen filed a report   → AI-triage it
+    smart_wroclaw/event.geocode     an event's location changed → geocode it
+    smart_wroclaw/chat.turn         a chat message → the orchestrator runs it
 
-Both are fire-and-forget from the API; the heavy work (LLM calls) runs on the
-worker process so a burst of triage/answer jobs can't starve interactive
-traffic.
+Both are fire-and-forget from the API; the heavy work (LLM / HERE calls) runs on
+the worker process so a burst of jobs can't starve interactive traffic.
 """
 
 import os
@@ -30,8 +29,6 @@ inngest_client = inngest.Inngest(
     is_production=_IS_PRODUCTION,
 )
 
-EVENT_ASSISTANT_RUN = "smart_wroclaw/assistant.run"
-EVENT_REPORT_TRIAGE = "smart_wroclaw/report.triage"
 # An event's location string was added/changed → resolve its lat/lng via HERE.
 EVENT_EVENT_GEOCODE = "smart_wroclaw/event.geocode"
 # A chat message → the orchestrator ("main agent") composes the tool elements.

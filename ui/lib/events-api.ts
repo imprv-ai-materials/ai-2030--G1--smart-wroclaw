@@ -1,5 +1,5 @@
 /**
- * Typed client for city events shown to citizens — issues, alarms, venues and
+ * Typed client for city events shown to users — issues, alarms, venues and
  * promotions plotted on the map and listed on the home screen. Reading is
  * public; creating an event requires a confirmed-email bearer token.
  */
@@ -47,8 +47,8 @@ export type CityEvent = {
   address: string | null;
   lat: number | null;
   lng: number | null;
-  source: string | null; // "CITY" | "CITIZEN" | "BUSINESS"
-  reporter_id: number | null; // citizens.id when a resident filed it
+  source: string | null; // "CITY" | "USER" | "BUSINESS"
+  reporter_id: number | null; // users.id when a resident filed it
   starts_at: string | null;
   ends_at: string | null;
   // Structured / reportable fields (migration 0005). `details` carries the
@@ -140,7 +140,7 @@ export const EVENT_STATUS_OPTIONS = Object.keys(
 
 export const SOURCE_LABELS: Record<string, string> = {
   CITY: "Miasto",
-  CITIZEN: "Mieszkaniec",
+  USER: "Mieszkaniec",
   BUSINESS: "Firma",
 };
 

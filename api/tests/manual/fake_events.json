@@ -2,7 +2,7 @@
   {
     "type": "ISSUE",
     "status": "ACTIVE",
-    "source": "CITIZEN",
+    "source": "USER",
     "category": "ROADS",
     "severity": "HIGH",
     "subtype": "POTHOLE",
@@ -25,7 +25,7 @@
   {
     "type": "ISSUE",
     "status": "ACTIVE",
-    "source": "CITIZEN",
+    "source": "USER",
     "category": "LIGHTING",
     "severity": "MEDIUM",
     "subtype": "STREETLIGHT",
@@ -67,7 +67,7 @@
   {
     "type": "ISSUE",
     "status": "RESOLVED",
-    "source": "CITIZEN",
+    "source": "USER",
     "category": "WASTE",
     "severity": "LOW",
     "subtype": "OVERFLOW_BIN",
@@ -84,7 +84,7 @@
   {
     "type": "ISSUE",
     "status": "ACTIVE",
-    "source": "CITIZEN",
+    "source": "USER",
     "category": "GREENERY",
     "severity": "MEDIUM",
     "subtype": "FALLEN_TREE",
@@ -104,7 +104,7 @@
   {
     "type": "ISSUE",
     "status": "ACTIVE",
-    "source": "CITIZEN",
+    "source": "USER",
     "category": "PUBLIC_TRANSPORT",
     "severity": "MEDIUM",
     "subtype": "SHELTER_DAMAGE",
@@ -372,7 +372,7 @@
   {
     "type": "ISSUE",
     "status": "ACTIVE",
-    "source": "CITIZEN",
+    "source": "USER",
     "category": "ROADS",
     "severity": "LOW",
     "subtype": "MARKINGS",
@@ -393,7 +393,7 @@
   {
     "type": "ISSUE",
     "status": "ACTIVE",
-    "source": "CITIZEN",
+    "source": "USER",
     "category": "GREENERY",
     "severity": "LOW",
     "subtype": "OVERGROWN",
@@ -465,7 +465,7 @@
   {
     "type": "MISSING_PET",
     "status": "ACTIVE",
-    "source": "CITIZEN",
+    "source": "USER",
     "district": "Nadodrze",
     "subtype": "PET_LOST",
     "contact_phone": "600 123 456",
@@ -492,7 +492,7 @@
   {
     "type": "MISSING_PET",
     "status": "ACTIVE",
-    "source": "CITIZEN",
+    "source": "USER",
     "district": "Krzyki",
     "subtype": "PET_LOST",
     "contact_phone": "512 987 654",
@@ -520,7 +520,7 @@
   {
     "type": "MISSING_PET",
     "status": "ACTIVE",
-    "source": "CITIZEN",
+    "source": "USER",
     "district": "Sępolno",
     "subtype": "PET_FOUND",
     "contact_phone": "530 111 222",
@@ -542,7 +542,7 @@
   {
     "type": "MISSING_PET",
     "status": "RESOLVED",
-    "source": "CITIZEN",
+    "source": "USER",
     "district": "Gaj",
     "subtype": "PET_LOST",
     "resolved_at": "2026-09-03T18:00:00+02:00",
@@ -563,7 +563,7 @@
   {
     "type": "HAZARD",
     "status": "ACTIVE",
-    "source": "CITIZEN",
+    "source": "USER",
     "severity": "CRITICAL",
     "district": "Psie Pole",
     "subtype": "DOWNED_POWER_LINE",
@@ -585,7 +585,7 @@
   {
     "type": "HAZARD",
     "status": "ACTIVE",
-    "source": "CITIZEN",
+    "source": "USER",
     "severity": "MEDIUM",
     "district": "Fabryczna",
     "subtype": "AGGRESSIVE_ANIMAL",
@@ -760,7 +760,7 @@
   {
     "type": "COMMUNITY",
     "status": "ACTIVE",
-    "source": "CITIZEN",
+    "source": "USER",
     "district": "Nadodrze",
     "subtype": "NEIGHBOUR_HELP",
     "contact_phone": "690 555 777",

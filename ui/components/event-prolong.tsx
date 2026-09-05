@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Author-only expiry control for an event. Citizen-filed events drop off the
+ * Author-only expiry control for an event. User-filed events drop off the
  * map 24h after they're posted (so stale reports don't pile up); the author —
  * and only the author — can keep theirs alive here. Renders nothing for anyone
  * who isn't signed in as the event's reporter, so it's safe to drop into any

@@ -1,4 +1,4 @@
-"""EventsService — the citizen city-map feed.
+"""EventsService — the user city-map feed.
 
 Read side is public (the map + "aktywne zdarzenia" list). Writes come from two
 places: a logged-in, email-confirmed resident filing an event, and the seed /
@@ -23,11 +23,18 @@ from api.contexts_boundaries.city_events_bc.repositories import AbstractEventsRe
 from api.shared.exceptions import AccessDeniedError, NotFoundError
 
 # How long a freshly filed event stays on the map before it drops off. Residents
-# routinely file events and never come back to close them, so anything a citizen
+# routinely file events and never come back to close them, so anything a user
 # posts auto-expires after this window unless they explicitly prolong it. The
 # author can extend it (see `prolong_event`); city/seed events set their own
 # `expires_at` (usually none) and are unaffected.
 EVENT_DEFAULT_TTL = timedelta(hours=24)
+
+
+# Every city_events row must reference a `users` account (reporter_id is a NOT
+# NULL FK). Municipal / seed / ingest events that carry no real resident are
+# attributed to the system "City" account, seeded with this fixed id in the auth
+# migration (0003_auth).
+SYSTEM_USER_ID = 1
 
 
 def _utcnow() -> datetime:
@@ -69,6 +76,9 @@ _NOT_NULL_DEFAULTS: dict[str, Any] = {
     "confirmations": 0,
     "verified": False,
     "details": {},
+    # NOT NULL FK → users(id). Seed/ingest rows with no real reporter fall back
+    # to the system "City" account.
+    "reporter_id": SYSTEM_USER_ID,
 }
 
 
@@ -176,7 +186,7 @@ class EventsService:
         title: str,
         description: str,
         reporter_id: int | None = None,
-        source: EventSource = EventSource.CITIZEN,
+        source: EventSource = EventSource.USER,
         status: EventStatus = EventStatus.ACTIVE,
         category: ReportCategory | None = None,
         severity: Severity | None = None,

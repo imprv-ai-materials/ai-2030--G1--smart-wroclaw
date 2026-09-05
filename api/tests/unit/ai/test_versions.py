@@ -5,7 +5,6 @@ import importlib
 import pytest
 from api.ai import load_current
 from api.ai.assistant_agent import AbstractAssistantAgent
-from api.ai.triage_agent import AbstractTriageAgent
 from parameterized import param, parameterized
 from tests import BaseUnitTestCase
 
@@ -19,14 +18,6 @@ class TestVersionResolver(BaseUnitTestCase):
         assert current.version == "v1"
         assert issubclass(current.agent_class, AbstractAssistantAgent)
 
-    def test_load_current__triage__resolves_v1(self) -> None:
-        # GIVEN / WHEN the current triage version is resolved
-        current = load_current("triage_agent")
-
-        # THEN it points at v1's concrete agent
-        assert current.version == "v1"
-        assert issubclass(current.agent_class, AbstractTriageAgent)
-
     def test_load_current__unknown_agent__raises(self) -> None:
         # GIVEN an agent name with no versions/ folder
         # WHEN / THEN resolving it surfaces a FileNotFoundError
@@ -37,7 +28,6 @@ class TestVersionResolver(BaseUnitTestCase):
         [
             param("assistant v1", module_path="api.ai.assistant_agent.versions.v1"),
             param("assistant v2", module_path="api.ai.assistant_agent.versions.v2"),
-            param("triage v1", module_path="api.ai.triage_agent.versions.v1"),
         ]
     )
     def test_version_module__exposes_AGENT(self, _, module_path) -> None:

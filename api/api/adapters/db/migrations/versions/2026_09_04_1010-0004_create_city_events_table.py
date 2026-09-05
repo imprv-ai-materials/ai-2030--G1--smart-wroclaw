@@ -4,10 +4,10 @@ Revision ID: 0004_city_events
 Revises: 0003_auth
 Create Date: 2026-09-04 10:10:00.000000
 
-`city_events` is the citizen-map feed: geolocated things of a `type`
+`city_events` is the user-map feed: geolocated things of a `type`
 (ISSUE / ALARM / VENUE / PROMOTION) with a `status`, a `source` (who filed it),
-and optional `(lat, lng)`. Broader than `issue_reports` — it powers the map
-and the "aktywne zdarzenia" list on the resident home screen.
+an owning `reporter_id` (NOT NULL FK → users), and optional `(lat, lng)`. It
+powers the map and the "aktywne zdarzenia" list on the resident home screen.
 """
 
 from api.adapters.db.migrations.versions import execute
@@ -34,8 +34,8 @@ def upgrade() -> None:
             address       TEXT,
             lat           DOUBLE PRECISION,
             lng           DOUBLE PRECISION,
-            source        TEXT        NOT NULL DEFAULT 'CITY' CHECK (source IN ('CITY','CITIZEN','BUSINESS')),
-            reporter_id   BIGINT,
+            source        TEXT        NOT NULL DEFAULT 'CITY' CHECK (source IN ('CITY','USER','BUSINESS')),
+            reporter_id   BIGINT      NOT NULL REFERENCES users (id),
             starts_at     TIMESTAMPTZ,
             ends_at       TIMESTAMPTZ,
             created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -44,6 +44,7 @@ def upgrade() -> None:
         """)
     execute("CREATE INDEX city_events_status_idx ON city_events (status);")
     execute("CREATE INDEX city_events_type_idx ON city_events (type);")
+    execute("CREATE INDEX city_events_reporter_id_idx ON city_events (reporter_id);")
 
 
 def downgrade() -> None:

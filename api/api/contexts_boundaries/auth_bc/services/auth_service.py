@@ -1,6 +1,6 @@
 """AuthService — registration, login, email confirmation, password reset.
 
-The service owns the whole citizen-auth flow; the router is a thin HTTP shell
+The service owns the whole user-auth flow; the router is a thin HTTP shell
 over it. Emails (confirmation / reset links) go out through the injected
 `AbstractEmailClient`, which is the Resend client in prod and a console logger in
 local dev.
@@ -18,10 +18,10 @@ from fastapi import HTTPException, status
 
 from api.adapters.email import AbstractEmailClient
 from api.config import Config
-from api.contexts_boundaries.auth_bc.models import Citizen, TokenKind
+from api.contexts_boundaries.auth_bc.models import User, TokenKind
 from api.contexts_boundaries.auth_bc.repositories import (
     AbstractAuthTokensRepository,
-    AbstractCitizensRepository,
+    AbstractUsersRepository,
 )
 from api.contexts_boundaries.auth_bc.security import (
     generate_token,
@@ -30,65 +30,65 @@ from api.contexts_boundaries.auth_bc.security import (
     issue_access_token,
     verify_password,
 )
-from api.contexts_boundaries.auth_bc.services.schemas import MeResponse, TokenResponse
+from api.contexts_boundaries.auth_bc.schemas import MeResponse, TokenResponse
 from loguru import logger
 
 
 class AuthService:
     def __init__(
         self,
-        citizens_repository: AbstractCitizensRepository,
+        users_repository: AbstractUsersRepository,
         auth_tokens_repository: AbstractAuthTokensRepository,
         email_client: AbstractEmailClient,
         config: Config,
     ) -> None:
-        self._citizens = citizens_repository
+        self._users = users_repository
         self._tokens = auth_tokens_repository
         self._email = email_client
         self._config = config
 
     # ── registration / login ─────────────────────────────────────────────────
-    def register(self, email: str, password: str) -> Citizen:
+    def register(self, email: str, password: str) -> User:
         email = email.strip().lower()
-        if self._citizens.get_by_email(email) is not None:
+        if self._users.get_by_email(email) is not None:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail="konto z tym adresem email już istnieje",
             )
-        citizen = self._citizens.create(
+        user = self._users.create(
             email=email,
             password_hash=hash_password(password, self._config.app.password_pepper),
         )
-        self._send_confirmation_email(citizen)
-        return citizen
+        self._send_confirmation_email(user)
+        return user
 
     def login(self, email: str, password: str) -> TokenResponse:
-        citizen = self._citizens.get_by_email(email)
-        if citizen is None or not verify_password(
-            password, citizen.password_hash, self._config.app.password_pepper
+        user = self._users.get_by_email(email)
+        if user is None or not verify_password(
+            password, user.password_hash, self._config.app.password_pepper
         ):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="nieprawidłowy email lub hasło",
             )
-        token, expires_in = issue_access_token(citizen.id, citizen.email, self._config)
+        token, expires_in = issue_access_token(user.id, user.email, self._config)
         return TokenResponse(
             access_token=token,
             expires_in=expires_in,
-            email_confirmed=citizen.email_confirmed,
+            email_confirmed=user.email_confirmed,
         )
 
-    def get_me(self, citizen_id: int) -> MeResponse:
-        citizen = self._require_citizen(citizen_id)
+    def get_me(self, user_id: int) -> MeResponse:
+        user = self._require_user(user_id)
         return MeResponse(
-            id=citizen.id,
-            email=citizen.email,
-            email_confirmed=citizen.email_confirmed,
-            phone=citizen.phone,
+            id=user.id,
+            email=user.email,
+            email_confirmed=user.email_confirmed,
+            phone=user.phone,
         )
 
     # ── email confirmation ───────────────────────────────────────────────────
-    def confirm_email(self, raw_token: str) -> Citizen:
+    def confirm_email(self, raw_token: str) -> User:
         record = self._tokens.get_active(hash_token(raw_token), TokenKind.CONFIRM_EMAIL)
         if record is None:
             raise HTTPException(
@@ -96,34 +96,34 @@ class AuthService:
                 detail="link potwierdzający jest nieprawidłowy lub wygasł",
             )
         self._tokens.mark_used(record.id)
-        citizen = self._citizens.set_email_confirmed(record.citizen_id)
-        if citizen is None:
+        user = self._users.set_email_confirmed(record.user_id)
+        if user is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="konto nie istnieje")
-        return citizen
+        return user
 
     def resend_confirmation(self, email: str) -> None:
         """Best-effort resend. Silent on unknown / already-confirmed addresses
         so this can't be used to probe for accounts."""
-        citizen = self._citizens.get_by_email(email)
-        if citizen is not None and not citizen.email_confirmed:
-            self._send_confirmation_email(citizen)
+        user = self._users.get_by_email(email)
+        if user is not None and not user.email_confirmed:
+            self._send_confirmation_email(user)
 
     # ── password reset / change ──────────────────────────────────────────────
     def request_password_reset(self, email: str) -> None:
-        citizen = self._citizens.get_by_email(email)
-        if citizen is None:
+        user = self._users.get_by_email(email)
+        if user is None:
             return  # anti-enumeration: pretend success
         raw, token_hash = generate_token()
-        self._tokens.invalidate_all(citizen.id, TokenKind.RESET_PASSWORD)
+        self._tokens.invalidate_all(user.id, TokenKind.RESET_PASSWORD)
         self._tokens.create(
-            citizen_id=citizen.id,
+            user_id=user.id,
             kind=TokenKind.RESET_PASSWORD,
             token_hash=token_hash,
             expires_at=self._expiry(self._config.app.reset_token_ttl_hours),
         )
         link = f"{self._ui_base}/auth/reset-password?token={raw}"
         self._email.send(
-            to=citizen.email,
+            to=user.email,
             subject=f"{self._config.app.name}: reset hasła",
             html=_reset_email_html(self._config.app.name, link),
             text=f"Aby zresetować hasło, otwórz: {link}\nLink jest ważny "
@@ -138,48 +138,48 @@ class AuthService:
                 detail="link resetu hasła jest nieprawidłowy lub wygasł",
             )
         self._tokens.mark_used(record.id)
-        self._citizens.set_password_hash(
-            record.citizen_id, hash_password(new_password, self._config.app.password_pepper)
+        self._users.set_password_hash(
+            record.user_id, hash_password(new_password, self._config.app.password_pepper)
         )
 
-    def change_password(self, citizen_id: int, current_password: str, new_password: str) -> None:
-        citizen = self._require_citizen(citizen_id)
+    def change_password(self, user_id: int, current_password: str, new_password: str) -> None:
+        user = self._require_user(user_id)
         if not verify_password(
-            current_password, citizen.password_hash, self._config.app.password_pepper
+            current_password, user.password_hash, self._config.app.password_pepper
         ):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="aktualne hasło jest nieprawidłowe",
             )
-        self._citizens.set_password_hash(
-            citizen.id, hash_password(new_password, self._config.app.password_pepper)
+        self._users.set_password_hash(
+            user.id, hash_password(new_password, self._config.app.password_pepper)
         )
 
     # ── internals ────────────────────────────────────────────────────────────
-    def _send_confirmation_email(self, citizen: Citizen) -> None:
+    def _send_confirmation_email(self, user: User) -> None:
         raw, token_hash = generate_token()
-        self._tokens.invalidate_all(citizen.id, TokenKind.CONFIRM_EMAIL)
+        self._tokens.invalidate_all(user.id, TokenKind.CONFIRM_EMAIL)
         self._tokens.create(
-            citizen_id=citizen.id,
+            user_id=user.id,
             kind=TokenKind.CONFIRM_EMAIL,
             token_hash=token_hash,
             expires_at=self._expiry(self._config.app.email_token_ttl_hours),
         )
         link = f"{self._ui_base}/auth/confirm?token={raw}"
         self._email.send(
-            to=citizen.email,
+            to=user.email,
             subject=f"{self._config.app.name}: potwierdź adres email",
             html=_confirm_email_html(self._config.app.name, link),
             text=f"Witaj w {self._config.app.name}! Potwierdź adres email: {link}\n"
             f"Link jest ważny {self._config.app.email_token_ttl_hours} h.",
         )
-        logger.info("auth: confirmation email dispatched to citizen_id={}", citizen.id)
+        logger.info("auth: confirmation email dispatched to user_id={}", user.id)
 
-    def _require_citizen(self, citizen_id: int) -> Citizen:
-        citizen = self._citizens.get_by_id(citizen_id)
-        if citizen is None:
+    def _require_user(self, user_id: int) -> User:
+        user = self._users.get_by_id(user_id)
+        if user is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="konto nie istnieje")
-        return citizen
+        return user
 
     @property
     def _ui_base(self) -> str:
