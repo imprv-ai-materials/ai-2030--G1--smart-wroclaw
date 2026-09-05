@@ -1,0 +1,85 @@
+services:
+
+  inngest:
+    image: inngest/inngest:latest
+    # Points at the WORKER process (uvicorn, role=worker, :8103) — only the
+    # worker serves /api/inngest and executes background jobs, so a heavy triage
+    # burst can't starve the REST API (:8101).
+    #
+    # --no-discovery stops the dev server probing other localhost ports (incl.
+    # the API on :8101, which deliberately does NOT serve Inngest).
+    command: >
+      inngest dev --no-discovery -u http://host.docker.internal:8103/api/inngest
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    # Host ports shifted +200 to avoid clashing with a sibling imprv service.
+    ports:
+      - "8488:8288"
+      - "8489:8289"
+
+  db:
+    image: postgres:18
+    restart: always
+    environment:
+      - POSTGRES_USER=${CONFIG__POSTGRES__USER}
+      - POSTGRES_PASSWORD=${CONFIG__POSTGRES__PASSWORD}
+      - POSTGRES_DB=${CONFIG__POSTGRES__DB}
+    volumes:
+      # postgres:18+ stores data in a version-specific subdir; mount the parent
+      # (/var/lib/postgresql), NOT /var/lib/postgresql/data (the pre-18 path).
+      # A Docker-managed named volume keeps DB state OUT of the source tree.
+      - db_data:/var/lib/postgresql
+    healthcheck:
+      test: ['CMD-SHELL', 'PGPASSWORD=${CONFIG__POSTGRES__PASSWORD} pg_isready -h localhost -U ${CONFIG__POSTGRES__USER} -d ${CONFIG__POSTGRES__DB}']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    ports:
+      - "5439:5432"
+
+  # Local-only data-labelling UI for the eval workflow (eval/event_extractor/).
+  # OFF by default (profile "eval") so Tilt and the normal stack don't start it.
+  # Bring it up on its own with:
+  #   docker compose --env-file api/.env --profile eval up -d label-studio
+  # Then open http://localhost:8080 and log in as admin@smart-wroclaw.local / labelstudio.
+  # (In the devcontainer it's always on — see .devcontainer/compose.yaml.)
+  label-studio:
+    image: heartexlabs/label-studio:latest
+    profiles: ["eval"]
+    restart: unless-stopped
+    environment:
+      # Bootstrap a superuser (no signup wall) and silence outbound telemetry /
+      # version checks — this instance is meant to stay on your machine.
+      LABEL_STUDIO_USERNAME: admin@smart-wroclaw.local
+      LABEL_STUDIO_PASSWORD: labelstudio
+      COLLECT_ANALYTICS: "false"
+      LATEST_VERSION_CHECK: "false"
+    volumes:
+      - label_studio_data:/label-studio/data
+    ports:
+      - "8080:8080"
+
+  migrations:
+    container_name: smart_wroclaw_migrations
+    image: smart-wroclaw-migrations
+    build:
+      # Context is the repo-module root (smart_wroclaw/) — the same dir as this
+      # compose file — so the Dockerfile can COPY the api/ package.
+      context: .
+      dockerfile: migrations.Dockerfile
+    env_file:
+      - api/.env
+    environment:
+      CONFIG__POSTGRES__HOST: db
+      CONFIG__POSTGRES__PORT: 5432
+    command: alembic upgrade head
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  db_data: {}
+  label_studio_data: {}
+
+networks:
+  network: {}

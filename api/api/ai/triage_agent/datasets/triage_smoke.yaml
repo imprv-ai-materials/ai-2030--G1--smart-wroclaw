@@ -1,0 +1,30 @@
+# Smoke dataset for report triage — mirrors the offline unit tests so the
+# keyword heuristic and (later) the LLM can be scored on the same inputs.
+name: triage_smoke
+description: Representative citizen reports with expected routing.
+cases:
+  - id: water_leak_critical
+    title: Wyciek wody z hydrantu
+    description: Z hydrantu na Legnickiej leje się woda, zalewa chodnik, jest zagrożenie.
+    expect:
+      category: WATER
+      department: MPWiK
+      severity: CRITICAL
+  - id: roads_pothole
+    title: Dziura w jezdni
+    description: Ogromny wybój na ulicy Krakowskiej, można uszkodzić samochód.
+    expect:
+      category: ROADS
+      department: ZDiUM
+  - id: citizen_category_wins
+    title: Zgłoszenie mieszkańca
+    description: Przewrócony kosz na śmieci w parku.
+    citizen_category: GREENERY
+    expect:
+      # A citizen-declared category is respected over the keyword guess.
+      category: GREENERY
+  - id: fallback_default_dept
+    title: Coś dziwnego
+    description: Nietypowa sprawa bez słów kluczowych.
+    expect:
+      department: __default__

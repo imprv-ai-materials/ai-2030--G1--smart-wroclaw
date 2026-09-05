@@ -1,0 +1,9 @@
+context_parser: pypyr.parser.keyvaluepairs
+steps:
+  - pypyr.steps.debug
+  - pypyr.steps.configvars
+
+  - name: pypyr.steps.cmd
+    description: Starting Next.js UI on :3002
+    in:
+      cmd: pnpm --dir ui dev

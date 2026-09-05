@@ -1,0 +1,13 @@
+context_parser: pypyr.parser.keyvaluepairs
+steps:
+  - pypyr.steps.debug
+  - pypyr.steps.configvars
+
+  - name: pypyr.steps.cmd
+    description: >
+      Applying database migrations (alembic upgrade head).
+
+      Needs Postgres reachable via the CONFIG__POSTGRES__* env vars in .env —
+      `pypyr start_tilt` (or `docker compose up -d db`) brings it up first.
+    in:
+      cmd: poetry run alembic -c api/alembic.ini upgrade head

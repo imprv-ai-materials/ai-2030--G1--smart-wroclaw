@@ -1,0 +1,18 @@
+# Smoke dataset for the city Q&A assistant — a handful of representative citizen
+# questions. Used by evaluations/ to sanity-check answer quality across revisions.
+name: qa_smoke
+description: Representative Wrocław municipal-service questions.
+cases:
+  - id: waste_schedule
+    question: Kiedy jest wywóz odpadów zmieszanych na Nadodrzu?
+    expects_topic: waste
+  - id: water_outage
+    question: Nie mam wody w kranie na Krzykach, co robić?
+    expects_topic: water
+  - id: tram_delay
+    question: Dlaczego tramwaj linii 10 nie kursuje dziś rano?
+    expects_topic: public_transport
+  - id: report_nudge
+    question: Widzę wyciek wody z hydrantu na ulicy Legnickiej.
+    # A real interventionable problem — the assistant should nudge to „Zgłoś problem".
+    expects_nudge_to_report: true

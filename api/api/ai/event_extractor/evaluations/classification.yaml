@@ -1,0 +1,18 @@
+# Evaluation: the agent assigns the right PRIMARY category to a report.
+# The offline heuristic is scored directly (no LLM); with a key set, the same
+# dataset scores the model's structured output. The authoritative, larger run is
+# `eval/category_agent/run_deepeval.py` (adds per-class F1 + bootstrap CIs); this
+# YAML is the in-package convention twin of triage_agent/evaluations.
+name: classification
+description: Primary-category accuracy against category_smoke.
+dataset: category_smoke
+assertions:
+  - id: primary_category_match
+    kind: field_equals
+    field: primary_category
+  - id: secondary_categories_match
+    kind: set_equals
+    field: secondary_categories
+    only_when_expected: true
+metrics:
+  - accuracy

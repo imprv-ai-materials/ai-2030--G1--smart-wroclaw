@@ -1,0 +1,6 @@
+# CURRENT — which version of event_extractor the app runs.
+# The loader imports `api.ai.event_extractor.versions.<version>` and uses its
+# AGENT class. Promote by changing `version`; no code change.
+version: v1
+# Optional per-deployment model override; null → the version's default / config.
+model: null

@@ -1,0 +1,21 @@
+context_parser: pypyr.parser.keyvaluepairs
+steps:
+  - pypyr.steps.debug
+  - pypyr.steps.configvars
+
+  - name: pypyr.steps.env
+    description: Setting role + Inngest dev env
+    in:
+      env:
+        set:
+          # REST-only process — it SENDS Inngest events but does NOT execute
+          # background jobs. Those run on `pypyr start_worker`. Run BOTH locally.
+          SMART_WROCLAW_ROLE: 'api'
+          # Dev mode pointed at the dev server's host port (compose.yaml). With
+          # this set no Inngest signing key is needed locally.
+          INNGEST_DEV: '{inngest_dev_url}'
+
+  - name: pypyr.steps.cmd
+    description: Starting API (REST) on :8101
+    in:
+      cmd: poetry run uvicorn api.main:app --host 0.0.0.0 --reload --port 8101

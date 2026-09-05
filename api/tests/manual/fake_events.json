@@ -1,0 +1,779 @@
+[
+  {
+    "type": "ISSUE",
+    "status": "ACTIVE",
+    "source": "CITIZEN",
+    "category": "ROADS",
+    "severity": "HIGH",
+    "subtype": "POTHOLE",
+    "district": "Gądów",
+    "confirmations": 12,
+    "title": "Głęboka dziura w jezdni na ul. Legnickiej",
+    "description": "Duży ubytek w nawierzchni przy przystanku tramwajowym, uszkadza opony. Kierowcy gwałtownie hamują.",
+    "location_text": "ul. Legnicka, przy Magnolia Park",
+    "address": "ul. Legnicka 58, Wrocław",
+    "lat": 51.12005,
+    "lng": 16.99053,
+    "details": {
+      "near_landmark": "Magnolia Park",
+      "hazard_to": [
+        "opony",
+        "ruch"
+      ]
+    }
+  },
+  {
+    "type": "ISSUE",
+    "status": "ACTIVE",
+    "source": "CITIZEN",
+    "category": "LIGHTING",
+    "severity": "MEDIUM",
+    "subtype": "STREETLIGHT",
+    "district": "Nadodrze",
+    "confirmations": 5,
+    "title": "Niedziałająca latarnia na Nadodrzu",
+    "description": "Od trzech dni nie świeci latarnia przy skwerze. Wieczorem bardzo ciemno i niebezpiecznie.",
+    "location_text": "ul. Łokietka, Nadodrze",
+    "address": "ul. Władysława Łokietka 5, Wrocław",
+    "lat": 51.11822,
+    "lng": 17.03543,
+    "details": {
+      "days_out": 3
+    }
+  },
+  {
+    "type": "OUTAGE",
+    "status": "ACTIVE",
+    "source": "CITY",
+    "category": "WATER",
+    "severity": "CRITICAL",
+    "subtype": "WATER_MAIN",
+    "district": "Krzyki",
+    "verified": true,
+    "title": "Awaria magistrali wodociągowej — Krzyki",
+    "description": "Wstrzymana dostawa wody dla części osiedla. Ekipy MPWiK na miejscu. Podstawiono beczkowozy.",
+    "location_text": "ul. Powstańców Śląskich, Krzyki",
+    "address": "ul. Powstańców Śląskich 120, Wrocław",
+    "lat": 51.09157,
+    "lng": 17.0189,
+    "details": {
+      "utility": "WATER",
+      "planned": false,
+      "provider": "MPWiK",
+      "affected_area": "część osiedla Krzyki",
+      "mitigation": "beczkowozy"
+    }
+  },
+  {
+    "type": "ISSUE",
+    "status": "RESOLVED",
+    "source": "CITIZEN",
+    "category": "WASTE",
+    "severity": "LOW",
+    "subtype": "OVERFLOW_BIN",
+    "district": "Stare Miasto",
+    "resolved_at": "2026-09-01T09:30:00+02:00",
+    "title": "Przepełnione kosze przy Rynku",
+    "description": "Kosze na śmieci były przepełnione po weekendzie. Zgłoszenie zamknięte — uprzątnięto.",
+    "location_text": "Rynek, Stare Miasto",
+    "address": "Rynek, Wrocław",
+    "lat": 51.10862,
+    "lng": 17.03182,
+    "details": {}
+  },
+  {
+    "type": "ISSUE",
+    "status": "ACTIVE",
+    "source": "CITIZEN",
+    "category": "GREENERY",
+    "severity": "MEDIUM",
+    "subtype": "FALLEN_TREE",
+    "district": "Krzyki",
+    "confirmations": 8,
+    "title": "Powalone drzewo w Parku Południowym",
+    "description": "Po wichurze drzewo blokuje alejkę spacerową. Utrudnia przejście z wózkami.",
+    "location_text": "Park Południowy, Krzyki",
+    "address": "Park Południowy, Wrocław",
+    "lat": 51.07528,
+    "lng": 17.00963,
+    "details": {
+      "cause": "wichura",
+      "blocks": "alejka spacerowa"
+    }
+  },
+  {
+    "type": "ISSUE",
+    "status": "ACTIVE",
+    "source": "CITIZEN",
+    "category": "PUBLIC_TRANSPORT",
+    "severity": "MEDIUM",
+    "subtype": "SHELTER_DAMAGE",
+    "district": "Plac Grunwaldzki",
+    "confirmations": 3,
+    "title": "Uszkodzona wiata przystankowa — pl. Grunwaldzki",
+    "description": "Wybita szyba w wiacie, ostre krawędzie. Zagrożenie dla pasażerów.",
+    "location_text": "pl. Grunwaldzki",
+    "address": "pl. Grunwaldzki, Wrocław",
+    "lat": 51.11216,
+    "lng": 17.0629,
+    "details": {
+      "hazard_to": [
+        "pasażerowie"
+      ]
+    }
+  },
+  {
+    "type": "ALARM",
+    "status": "ACTIVE",
+    "source": "CITY",
+    "category": "WATER",
+    "severity": "HIGH",
+    "subtype": "FLOOD_WARNING",
+    "district": "Ostrów Tumski",
+    "verified": true,
+    "title": "Ostrzeżenie: podwyższony stan Odry",
+    "description": "IMGW ostrzega przed wzrostem poziomu wody. Prosimy o ostrożność w rejonie bulwarów.",
+    "location_text": "Bulwary nad Odrą, Ostrów Tumski",
+    "address": "Ostrów Tumski, Wrocław",
+    "lat": 51.11458,
+    "lng": 17.04584,
+    "details": {
+      "provider": "IMGW",
+      "cause": "wzrost poziomu wody"
+    }
+  },
+  {
+    "type": "ALARM",
+    "status": "ACTIVE",
+    "source": "CITY",
+    "category": "OTHER",
+    "severity": "CRITICAL",
+    "subtype": "AIR_QUALITY",
+    "district": "Śródmieście",
+    "verified": true,
+    "title": "Alarm smogowy — przekroczony poziom PM10",
+    "description": "Zła jakość powietrza. Ogranicz aktywność na zewnątrz, szczególnie dzieci i seniorzy.",
+    "location_text": "Cały Wrocław — centrum",
+    "address": "Wrocław",
+    "lat": 51.10825,
+    "lng": 17.02691,
+    "details": {
+      "pollutant": "PM10",
+      "advice": "ogranicz aktywność na zewnątrz"
+    }
+  },
+  {
+    "type": "ROADWORKS",
+    "status": "SCHEDULED",
+    "source": "CITY",
+    "category": "ROADS",
+    "severity": "MEDIUM",
+    "subtype": "BRIDGE_REPAIR",
+    "district": "Plac Grunwaldzki",
+    "starts_at": "2026-09-08T06:00:00+02:00",
+    "ends_at": "2026-09-19T20:00:00+02:00",
+    "title": "Zapowiedziane utrudnienia — remont mostu Grunwaldzkiego",
+    "description": "W przyszłym tygodniu ruch wahadłowy na moście. Zaplanuj objazd przez most Pokoju.",
+    "location_text": "Most Grunwaldzki",
+    "address": "Most Grunwaldzki, Wrocław",
+    "lat": 51.10952,
+    "lng": 17.05262,
+    "details": {
+      "closure_type": "PARTIAL",
+      "detour_text": "objazd przez most Pokoju"
+    }
+  },
+  {
+    "type": "ALARM",
+    "status": "ACTIVE",
+    "source": "CITY",
+    "category": "PUBLIC_TRANSPORT",
+    "severity": "HIGH",
+    "subtype": "TRAM_SUSPENDED",
+    "district": "Przedmieście Świdnickie",
+    "verified": true,
+    "title": "Zawieszona linia tramwajowa 10",
+    "description": "Awaria sieci trakcyjnej. Tramwaje linii 10 zawieszone do odwołania, uruchomiono zastępcze autobusy.",
+    "location_text": "ul. Piłsudskiego, przy Dworcu Głównym",
+    "address": "ul. Marsz. J. Piłsudskiego, Wrocław",
+    "lat": 51.10177,
+    "lng": 17.03007,
+    "details": {
+      "affected_lines": [
+        "10"
+      ],
+      "cause": "awaria sieci trakcyjnej",
+      "substitute": "autobus zastępczy",
+      "provider": "MPK Wrocław"
+    }
+  },
+  {
+    "type": "VENUE",
+    "status": "ACTIVE",
+    "source": "CITY",
+    "subtype": "MARKET",
+    "district": "Stare Miasto",
+    "title": "Jarmark na wrocławskim Rynku",
+    "description": "Stoiska z rękodziełem i lokalnym jedzeniem. Codziennie 10:00–20:00.",
+    "location_text": "Rynek, Stare Miasto",
+    "address": "Rynek, Wrocław",
+    "lat": 51.10862,
+    "lng": 17.03182,
+    "details": {
+      "is_free": true,
+      "hours": "10:00–20:00"
+    }
+  },
+  {
+    "type": "VENUE",
+    "status": "SCHEDULED",
+    "source": "CITY",
+    "subtype": "CONCERT",
+    "district": "Biskupin",
+    "starts_at": "2026-09-13T19:00:00+02:00",
+    "title": "Koncert plenerowy przy Hali Stulecia",
+    "description": "Wieczór muzyki na żywo przy Pergoli i fontannie multimedialnej. Wstęp wolny.",
+    "location_text": "Hala Stulecia, Biskupin",
+    "address": "ul. Wystawowa 1, Wrocław",
+    "lat": 51.1075,
+    "lng": 17.07384,
+    "details": {
+      "is_free": true,
+      "price_text": "wstęp wolny"
+    }
+  },
+  {
+    "type": "VENUE",
+    "status": "ACTIVE",
+    "source": "CITY",
+    "subtype": "EXHIBITION",
+    "district": "Biskupin",
+    "title": "Wystawa czasowa — Pawilon Czterech Kopuł",
+    "description": "Sztuka współczesna. Bilety dostępne online i w kasie. Wtorek–niedziela.",
+    "location_text": "Pawilon Czterech Kopuł, Biskupin",
+    "address": "ul. Wystawowa 1, Wrocław",
+    "lat": 51.1075,
+    "lng": 17.07384,
+    "details": {
+      "is_free": false,
+      "ticket_url": "https://mnwr.pl",
+      "hours": "wt.–niedz."
+    }
+  },
+  {
+    "type": "VENUE",
+    "status": "SCHEDULED",
+    "source": "CITY",
+    "subtype": "SPORT",
+    "district": "Pilczyce",
+    "starts_at": "2026-09-20T20:00:00+02:00",
+    "title": "Bieg nocny wokół Stadionu Wrocław",
+    "description": "Zawody biegowe 10 km. Zapisy otwarte. Możliwe utrudnienia w ruchu w okolicy.",
+    "location_text": "Stadion Wrocław, Pilczyce",
+    "address": "al. Śląska 1, Wrocław",
+    "lat": 51.14153,
+    "lng": 16.94243,
+    "details": {
+      "distance_km": 10,
+      "signup_url": "https://bieg.wroclaw.pl"
+    }
+  },
+  {
+    "type": "VENUE",
+    "status": "ACTIVE",
+    "source": "CITY",
+    "subtype": "FAMILY",
+    "district": "Biskupin",
+    "title": "Rodzinny dzień w ZOO Wrocław",
+    "description": "Pokazy karmienia i warsztaty dla dzieci przy Afrykarium.",
+    "location_text": "ZOO Wrocław",
+    "address": "ul. Wróblewskiego 1-5, Wrocław",
+    "lat": 51.10604,
+    "lng": 17.07498,
+    "details": {
+      "is_free": false,
+      "audience": "rodziny z dziećmi"
+    }
+  },
+  {
+    "type": "PROMOTION",
+    "status": "ACTIVE",
+    "source": "BUSINESS",
+    "subtype": "FOOD",
+    "district": "Nadodrze",
+    "title": "-20% w kawiarni na Nadodrzu",
+    "description": "Rabat na całe menu przy haśle „Smart Wrocław”. Oferta ważna do końca miesiąca.",
+    "location_text": "ul. Jedności Narodowej, Nadodrze",
+    "address": "ul. Jedności Narodowej 80, Wrocław",
+    "lat": 51.12007,
+    "lng": 17.03961,
+    "expires_at": "2026-09-30T23:59:00+02:00",
+    "details": {
+      "business_type": "CAFE",
+      "discount_pct": 20,
+      "promo_code": "Smart Wrocław"
+    }
+  },
+  {
+    "type": "PROMOTION",
+    "status": "ACTIVE",
+    "source": "BUSINESS",
+    "subtype": "FOOD",
+    "district": "Krzyki",
+    "title": "Happy hours w Sky Tower",
+    "description": "Druga kawa gratis 15:00–17:00 w lokalu na parterze.",
+    "location_text": "Sky Tower, Powstańców Śląskich",
+    "address": "ul. Powstańców Śląskich 95, Wrocław",
+    "lat": 51.09462,
+    "lng": 17.02068,
+    "details": {
+      "business_type": "CAFE",
+      "offer": "druga kawa gratis",
+      "hours": "15:00–17:00"
+    }
+  },
+  {
+    "type": "PROMOTION",
+    "status": "SCHEDULED",
+    "source": "BUSINESS",
+    "subtype": "RETAIL",
+    "district": "Gądów",
+    "starts_at": "2026-09-12T10:00:00+02:00",
+    "ends_at": "2026-09-14T21:00:00+02:00",
+    "title": "Weekend zniżek w Magnolia Park",
+    "description": "Wybrane sklepy oferują rabaty do -50% w najbliższy weekend.",
+    "location_text": "Magnolia Park, Gądów",
+    "address": "ul. Legnicka 58, Wrocław",
+    "lat": 51.12005,
+    "lng": 16.99053,
+    "details": {
+      "business_type": "MALL",
+      "discount_pct": 50
+    }
+  },
+  {
+    "type": "PROMOTION",
+    "status": "ACTIVE",
+    "source": "BUSINESS",
+    "subtype": "FOOD",
+    "district": "Stare Miasto",
+    "title": "Śniadania 1+1 przy pl. Solnym",
+    "description": "Zamów jedno śniadanie, drugie otrzymasz gratis. W dni powszednie do 11:00.",
+    "location_text": "pl. Solny, Stare Miasto",
+    "address": "pl. Solny 12, Wrocław",
+    "lat": 51.10911,
+    "lng": 17.02856,
+    "details": {
+      "business_type": "RESTAURANT",
+      "offer": "1+1",
+      "hours": "dni powszednie do 11:00"
+    }
+  },
+  {
+    "type": "ISSUE",
+    "status": "ACTIVE",
+    "source": "CITIZEN",
+    "category": "ROADS",
+    "severity": "LOW",
+    "subtype": "MARKINGS",
+    "district": "Sępolno",
+    "confirmations": 2,
+    "title": "Zniszczone oznakowanie poziome — Sępolno",
+    "description": "Wytarte pasy na przejściu dla pieszych, słabo widoczne po zmroku.",
+    "location_text": "ul. Chełmońskiego, Sępolno",
+    "address": "ul. Chełmońskiego, Wrocław",
+    "lat": 51.10238,
+    "lng": 17.09969,
+    "details": {
+      "hazard_to": [
+        "piesi"
+      ]
+    }
+  },
+  {
+    "type": "ISSUE",
+    "status": "ACTIVE",
+    "source": "CITIZEN",
+    "category": "GREENERY",
+    "severity": "LOW",
+    "subtype": "OVERGROWN",
+    "district": "Grabiszyn",
+    "confirmations": 1,
+    "title": "Zaniedbany trawnik przy Grabiszynie",
+    "description": "Wysoka trawa i zaśmiecony skwer. Prośba o koszenie i uprzątnięcie.",
+    "location_text": "ul. Grabiszyńska, Grabiszyn",
+    "address": "ul. Grabiszyńska 240, Wrocław",
+    "lat": 51.0946,
+    "lng": 16.98145,
+    "details": {}
+  },
+  {
+    "type": "ALARM",
+    "status": "ACTIVE",
+    "source": "CITY",
+    "category": "OTHER",
+    "severity": "MEDIUM",
+    "subtype": "WEATHER",
+    "district": "Psie Pole",
+    "verified": true,
+    "title": "Ostrzeżenie meteo — silny wiatr",
+    "description": "Prognozowane porywy wiatru do 90 km/h. Zabezpiecz przedmioty na balkonach.",
+    "location_text": "Psie Pole i okolice",
+    "address": "Psie Pole, Wrocław",
+    "lat": 51.14673,
+    "lng": 17.12073,
+    "details": {
+      "provider": "IMGW",
+      "gust_kmh": 90
+    }
+  },
+  {
+    "type": "VENUE",
+    "status": "ACTIVE",
+    "source": "CITY",
+    "subtype": "MARKET",
+    "district": "Stare Miasto",
+    "title": "Targ śniadaniowy — Wyspa Słodowa",
+    "description": "Lokalni wystawcy, food trucki i muzyka. W każdą sobotę przy dobrej pogodzie.",
+    "location_text": "Wyspa Słodowa",
+    "address": "Wyspa Słodowa, Wrocław",
+    "lat": 51.11528,
+    "lng": 17.03712,
+    "details": {
+      "is_free": true,
+      "schedule": "soboty"
+    }
+  },
+  {
+    "type": "PROMOTION",
+    "status": "ACTIVE",
+    "source": "BUSINESS",
+    "subtype": "LEISURE",
+    "district": "Borek",
+    "title": "Bilety rodzinne -30% do Aquaparku",
+    "description": "Pakiet rodzinny w niższej cenie w dni powszednie. Rezerwacja online.",
+    "location_text": "Aquapark Wrocław, Borek",
+    "address": "ul. Borowska 99, Wrocław",
+    "lat": 51.09073,
+    "lng": 17.03285,
+    "details": {
+      "business_type": "AQUAPARK",
+      "discount_pct": 30,
+      "ticket_url": "https://aquapark.wroc.pl"
+    }
+  },
+  {
+    "type": "MISSING_PET",
+    "status": "ACTIVE",
+    "source": "CITIZEN",
+    "district": "Nadodrze",
+    "subtype": "PET_LOST",
+    "contact_phone": "600 123 456",
+    "confirmations": 4,
+    "title": "Zaginął kot „Mruczek” — Nadodrze",
+    "description": "Szary dachowiec w białe łapki, bardzo płochliwy. Uciekł przez otwarte okno w nocy. Prosimy o kontakt.",
+    "location_text": "ul. Pomorska, Nadodrze",
+    "address": "ul. Pomorska 20, Wrocław",
+    "lat": 51.11892,
+    "lng": 17.0306,
+    "details": {
+      "animal_species": "CAT",
+      "lost_or_found": "LOST",
+      "animal_name": "Mruczek",
+      "animal_color": "szary w białe łapki",
+      "animal_size": "SMALL",
+      "animal_sex": "M",
+      "has_collar": false,
+      "microchipped": true,
+      "last_seen_at": "2026-09-04T23:30:00+02:00",
+      "reward": "200 zł"
+    }
+  },
+  {
+    "type": "MISSING_PET",
+    "status": "ACTIVE",
+    "source": "CITIZEN",
+    "district": "Krzyki",
+    "subtype": "PET_LOST",
+    "contact_phone": "512 987 654",
+    "confirmations": 9,
+    "title": "Zaginął pies „Reksio” — Krzyki",
+    "description": "Beagle, rudo-biały, reaguje na imię. Zerwał się ze smyczy w parku. Ma obrożę z adresówką.",
+    "location_text": "Park Krzycki, Krzyki",
+    "address": "ul. Krzycka, Wrocław",
+    "lat": 51.07051,
+    "lng": 16.99864,
+    "details": {
+      "animal_species": "DOG",
+      "lost_or_found": "LOST",
+      "animal_name": "Reksio",
+      "animal_breed": "beagle",
+      "animal_color": "rudo-biały",
+      "animal_size": "MEDIUM",
+      "animal_sex": "M",
+      "has_collar": true,
+      "microchipped": true,
+      "last_seen_at": "2026-09-05T08:15:00+02:00",
+      "reward": "500 zł"
+    }
+  },
+  {
+    "type": "MISSING_PET",
+    "status": "ACTIVE",
+    "source": "CITIZEN",
+    "district": "Sępolno",
+    "subtype": "PET_FOUND",
+    "contact_phone": "530 111 222",
+    "title": "Znaleziono psa — Sępolno",
+    "description": "Znaleziony dorosły pies, mieszaniec, czarny z białą plamą na piersi. Zadbany, ale bez obroży. Czeka u znalazcy.",
+    "location_text": "ul. Monte Cassino, Sępolno",
+    "address": "ul. Monte Cassino 40, Wrocław",
+    "lat": 51.10948,
+    "lng": 17.10854,
+    "details": {
+      "animal_species": "DOG",
+      "lost_or_found": "FOUND",
+      "animal_color": "czarny z białą plamą",
+      "animal_size": "MEDIUM",
+      "animal_sex": "UNKNOWN",
+      "has_collar": false
+    }
+  },
+  {
+    "type": "MISSING_PET",
+    "status": "RESOLVED",
+    "source": "CITIZEN",
+    "district": "Gaj",
+    "subtype": "PET_LOST",
+    "resolved_at": "2026-09-03T18:00:00+02:00",
+    "title": "Odnaleziony kot „Luna” — Gaj",
+    "description": "Dziękujemy! Luna wróciła do domu po dwóch dniach. Zgłoszenie zamknięte.",
+    "location_text": "ul. Świeradowska, Gaj",
+    "address": "ul. Świeradowska 51, Wrocław",
+    "lat": 51.07629,
+    "lng": 17.04107,
+    "details": {
+      "animal_species": "CAT",
+      "lost_or_found": "LOST",
+      "animal_name": "Luna",
+      "animal_color": "czarna",
+      "animal_sex": "F"
+    }
+  },
+  {
+    "type": "HAZARD",
+    "status": "ACTIVE",
+    "source": "CITIZEN",
+    "severity": "CRITICAL",
+    "district": "Psie Pole",
+    "subtype": "DOWNED_POWER_LINE",
+    "confirmations": 6,
+    "title": "Zerwana linia energetyczna — Psie Pole",
+    "description": "Przewód leży na chodniku po wichurze, iskrzy. Zachowajcie odległość, zgłoszono do pogotowia energetycznego.",
+    "location_text": "ul. Kiełczowska, Psie Pole",
+    "address": "ul. Kiełczowska 30, Wrocław",
+    "lat": 51.14718,
+    "lng": 17.12058,
+    "details": {
+      "hazard_to": [
+        "przechodnie"
+      ],
+      "reported_to": "pogotowie energetyczne",
+      "provider": "Tauron"
+    }
+  },
+  {
+    "type": "HAZARD",
+    "status": "ACTIVE",
+    "source": "CITIZEN",
+    "severity": "MEDIUM",
+    "district": "Fabryczna",
+    "subtype": "AGGRESSIVE_ANIMAL",
+    "confirmations": 3,
+    "title": "Agresywny pies bez opieki — Gądów",
+    "description": "Duży pies bez właściciela biega przy placu zabaw, warczy na dzieci. Prosimy o interwencję straży miejskiej.",
+    "location_text": "ul. Bystrzycka, Gądów",
+    "address": "ul. Bystrzycka 10, Wrocław",
+    "lat": 51.118,
+    "lng": 16.98267,
+    "details": {
+      "hazard_to": [
+        "dzieci"
+      ],
+      "reported_to": "straż miejska"
+    }
+  },
+  {
+    "type": "HAZARD",
+    "status": "ACTIVE",
+    "source": "CITY",
+    "severity": "HIGH",
+    "district": "Stare Miasto",
+    "subtype": "ICE",
+    "verified": true,
+    "title": "Gołoledź na kładce Słodowej",
+    "description": "Oblodzona nawierzchnia kładki, bardzo ślisko. Służby powiadomione, zachowaj ostrożność.",
+    "location_text": "Kładka na Wyspę Słodową",
+    "address": "Wyspa Słodowa, Wrocław",
+    "lat": 51.11528,
+    "lng": 17.03712,
+    "details": {
+      "hazard_to": [
+        "piesi",
+        "rowerzyści"
+      ]
+    }
+  },
+  {
+    "type": "OUTAGE",
+    "status": "SCHEDULED",
+    "source": "CITY",
+    "category": "OTHER",
+    "severity": "MEDIUM",
+    "district": "Ołbin",
+    "subtype": "POWER_PLANNED",
+    "starts_at": "2026-09-10T08:00:00+02:00",
+    "ends_at": "2026-09-10T14:00:00+02:00",
+    "title": "Planowa przerwa w dostawie prądu — Ołbin",
+    "description": "Prace modernizacyjne sieci. Bez zasilania w godz. 8:00–14:00. Zabezpiecz sprzęt wrażliwy na zaniki.",
+    "location_text": "ul. Jedności Narodowej, Ołbin",
+    "address": "ul. Jedności Narodowej 150, Wrocław",
+    "lat": 51.12605,
+    "lng": 17.04637,
+    "details": {
+      "utility": "POWER",
+      "planned": true,
+      "provider": "Tauron",
+      "eta_restore": "2026-09-10T14:00:00+02:00",
+      "affected_area": "Ołbin — rejon ul. Jedności Narodowej"
+    }
+  },
+  {
+    "type": "OUTAGE",
+    "status": "ACTIVE",
+    "source": "CITY",
+    "category": "OTHER",
+    "severity": "HIGH",
+    "district": "Brochów",
+    "subtype": "GAS",
+    "verified": true,
+    "title": "Awaria gazociągu — Brochów",
+    "description": "Wstrzymana dostawa gazu po uszkodzeniu przyłącza. Ekipy PSG usuwają awarię. Nie używaj otwartego ognia.",
+    "location_text": "ul. Chińska, Brochów",
+    "address": "ul. Chińska 5, Wrocław",
+    "lat": 51.05959,
+    "lng": 17.08473,
+    "details": {
+      "utility": "GAS",
+      "planned": false,
+      "provider": "PSG",
+      "affected_area": "Brochów — ul. Chińska",
+      "safety": "nie używaj otwartego ognia"
+    }
+  },
+  {
+    "type": "ROADWORKS",
+    "status": "ACTIVE",
+    "source": "CITY",
+    "category": "ROADS",
+    "severity": "MEDIUM",
+    "district": "Przedmieście Oławskie",
+    "subtype": "TRACK_REPAIR",
+    "starts_at": "2026-09-01T06:00:00+02:00",
+    "ends_at": "2026-10-15T20:00:00+02:00",
+    "title": "Remont torowiska — ul. Krakowska",
+    "description": "Wymiana torowiska tramwajowego. Ruch tramwajów 3 i 10 skierowany na objazd, ruch samochodowy zwężony do jednego pasa.",
+    "location_text": "ul. Krakowska, Przedmieście Oławskie",
+    "address": "ul. Krakowska 100, Wrocław",
+    "lat": 51.09046,
+    "lng": 17.0657,
+    "details": {
+      "closure_type": "PARTIAL",
+      "affected_lines": [
+        "3",
+        "10"
+      ],
+      "detour_text": "tramwaje przez pl. Wróblewskiego"
+    }
+  },
+  {
+    "type": "ROADWORKS",
+    "status": "SCHEDULED",
+    "source": "CITY",
+    "category": "ROADS",
+    "severity": "HIGH",
+    "district": "Stare Miasto",
+    "subtype": "STREET_CLOSURE",
+    "starts_at": "2026-09-15T07:00:00+02:00",
+    "ends_at": "2026-09-16T18:00:00+02:00",
+    "title": "Zamknięcie ul. Świdnickiej",
+    "description": "Całkowite zamknięcie odcinka na czas wydarzenia miejskiego. Dojazd do posesji tylko dla mieszkańców.",
+    "location_text": "ul. Świdnicka, Stare Miasto",
+    "address": "ul. Świdnicka 20, Wrocław",
+    "lat": 51.10676,
+    "lng": 17.03206,
+    "details": {
+      "closure_type": "FULL",
+      "detour_text": "objazd ul. Kołłątaja / Podwale"
+    }
+  },
+  {
+    "type": "COMMUNITY",
+    "status": "SCHEDULED",
+    "source": "CITY",
+    "district": "Ołbin",
+    "subtype": "CLEANUP",
+    "starts_at": "2026-09-14T10:00:00+02:00",
+    "ends_at": "2026-09-14T14:00:00+02:00",
+    "title": "Sprzątanie brzegów Odry — wolontariat",
+    "description": "Wspólne sprzątanie bulwarów. Worki i rękawice zapewnione. Dołącz i zadbaj o miasto!",
+    "location_text": "Bulwar Xawerego Dunikowskiego",
+    "address": "Bulwar Dunikowskiego, Wrocław",
+    "lat": 51.1117,
+    "lng": 17.04307,
+    "details": {
+      "organizer": "Fundacja EkoOdra",
+      "volunteers_needed": 30,
+      "signup_url": "https://ekoodra.pl/zapisy"
+    }
+  },
+  {
+    "type": "COMMUNITY",
+    "status": "SCHEDULED",
+    "source": "CITY",
+    "district": "Przedmieście Świdnickie",
+    "subtype": "BLOOD_DRIVE",
+    "starts_at": "2026-09-11T09:00:00+02:00",
+    "ends_at": "2026-09-11T15:00:00+02:00",
+    "title": "Zbiórka krwi — mobilny punkt RCKiK",
+    "description": "Ambulans RCKiK przy Dworcu Głównym. Oddaj krew, uratuj życie. Weź dokument tożsamości.",
+    "location_text": "przy Dworcu Głównym",
+    "address": "ul. Piłsudskiego 105, Wrocław",
+    "lat": 51.09906,
+    "lng": 17.0366,
+    "details": {
+      "organizer": "RCKiK Wrocław",
+      "is_free": true,
+      "bring": "dokument tożsamości"
+    }
+  },
+  {
+    "type": "COMMUNITY",
+    "status": "ACTIVE",
+    "source": "CITIZEN",
+    "district": "Nadodrze",
+    "subtype": "NEIGHBOUR_HELP",
+    "contact_phone": "690 555 777",
+    "confirmations": 5,
+    "title": "Sąsiedzka pomoc seniorom — Nadodrze",
+    "description": "Szukamy wolontariuszy do zakupów i drobnej pomocy starszym sąsiadom. Nawet godzina w tygodniu się liczy.",
+    "location_text": "Nadodrze",
+    "address": "ul. Ołbińska, Wrocław",
+    "lat": 51.12418,
+    "lng": 17.03768,
+    "details": {
+      "organizer": "Rada Osiedla Nadodrze",
+      "volunteers_needed": 10
+    }
+  }
+]

@@ -1,0 +1,20 @@
+context_parser: pypyr.parser.keyvaluepairs
+steps:
+  - pypyr.steps.debug
+  - pypyr.steps.configvars
+
+  - name: pypyr.steps.shell
+    description: Installing Python (backend) dependencies
+    in:
+      cmd: poetry install --no-root
+
+  - name: pypyr.steps.cmd
+    description: Installing pre-commit hooks
+    swallow: true
+    in:
+      cmd: poetry run pre-commit install
+
+  - name: pypyr.steps.shell
+    description: Installing Next.js (frontend) dependencies
+    in:
+      cmd: pnpm --dir ui install

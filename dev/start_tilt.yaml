@@ -1,0 +1,20 @@
+context_parser: pypyr.parser.keyvaluepairs
+steps:
+  - pypyr.steps.debug
+  - pypyr.steps.configvars
+
+  - name: pypyr.steps.cmd
+    description: >
+      Starting Tilt (web UI on :10351).
+
+      Tilt brings up the docker-compose stack (Inngest dev server on :8488,
+      Postgres on :5439, one-shot migrations) from compose.yaml / Tiltfile, and
+      runs the API (:8101), the Inngest worker (:8103) and the Next.js UI (:3002)
+      as local resources.
+
+      Prefer this for a one-command dev environment. To run pieces by hand
+      instead, use `pypyr start_api`, `pypyr start_worker`, `pypyr start_ui` in
+      their own shells (after `docker compose --env-file api/.env up -d db
+      inngest`).
+    in:
+      cmd: tilt up -f Tiltfile --port 10451

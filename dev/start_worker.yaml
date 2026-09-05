@@ -1,0 +1,20 @@
+context_parser: pypyr.parser.keyvaluepairs
+steps:
+  - pypyr.steps.debug
+  - pypyr.steps.configvars
+
+  - name: pypyr.steps.env
+    description: Setting role + Inngest dev env
+    in:
+      env:
+        set:
+          # Inngest function host — this is where background jobs (assistant
+          # answers, report triage) actually execute. The dev server
+          # (compose.yaml) is pointed at this process's /api/inngest.
+          SMART_WROCLAW_ROLE: 'worker'
+          INNGEST_DEV: '{inngest_dev_url}'
+
+  - name: pypyr.steps.cmd
+    description: Starting Inngest worker on :8103
+    in:
+      cmd: poetry run uvicorn api.main:app --host 0.0.0.0 --reload --port 8103

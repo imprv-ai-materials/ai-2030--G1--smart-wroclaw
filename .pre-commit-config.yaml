@@ -1,0 +1,21 @@
+# Local hooks — run the same tools the dev/ pypyr pipelines use, via poetry.
+# `pypyr precommit` runs these against all files.
+repos:
+  - repo: local
+    hooks:
+      - id: black
+        name: black
+        entry: poetry run black -l 120 -t py312
+        language: system
+        types: [python]
+      - id: isort
+        name: isort
+        entry: poetry run isort
+        language: system
+        types: [python]
+      - id: flake8
+        name: flake8
+        entry: poetry run flake8 --max-line-length=120 --extend-ignore=D100,D101,D102,D103,D104,D105,D106,D107,E203,E231,W503,N806,E704
+        language: system
+        types: [python]
+        exclude: adapters/db/migrations/

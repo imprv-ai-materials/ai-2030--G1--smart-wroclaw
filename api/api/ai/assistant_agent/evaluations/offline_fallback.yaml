@@ -1,0 +1,11 @@
+# Evaluation: the assistant must degrade gracefully with no OpenAI key.
+# Runnable offline (no LLM calls) — asserts the templated fallback shape.
+name: offline_fallback
+description: With no API key, answers use the offline template and echo the question.
+dataset: qa_smoke
+assertions:
+  - id: offline_marker_present
+    kind: contains
+    value: "Tryb offline"
+  - id: echoes_question
+    kind: echoes_input

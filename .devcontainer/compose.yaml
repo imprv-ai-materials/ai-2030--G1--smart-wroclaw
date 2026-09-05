@@ -1,0 +1,97 @@
+# Compose stack that BACKS the devcontainer. VS Code / the devcontainer CLI runs
+# `docker compose up` on this file automatically when you "Reopen in Container",
+# so bringing the stack up is not a separate step — opening the container IS
+# firing up the compose.
+#
+# Difference vs the root compose.yaml (the native-host stack): there, Postgres and
+# Inngest are published on localhost and the api/worker/ui run on your machine.
+# Here EVERYTHING runs inside the compose network, so services address each other
+# by name (db:5432, inngest:8288) — no host.docker.internal, no host-port juggling,
+# which is what makes it behave identically on macOS / Windows / Linux.
+#
+# Host access to any port is handled by devcontainer.json `forwardPorts` (VS Code
+# picks free host ports), so this file publishes nothing and can't clash with a
+# native `docker compose` / Tilt run, or the known orphan-container :5439 clash.
+
+name: smart-wroclaw-devcontainer
+
+services:
+  # The devcontainer itself. Toolchain image + the mounted source tree. It just
+  # idles (`sleep infinity`); you start uvicorn / pnpm inside it from a terminal.
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: sleep infinity
+    volumes:
+      - ..:/workspaces/smart_wroclaw:cached
+      # Keep the Linux virtualenv and node_modules in named volumes so they never
+      # collide with a host-built .venv / ui/node_modules on the bind mount (a
+      # macOS/Windows venv or native module won't run under Linux) — and so they
+      # survive rebuilds and stay off the slow bind mount.
+      - venv:/workspaces/smart_wroclaw/.venv
+      - ui-node-modules:/workspaces/smart_wroclaw/ui/node_modules
+    environment:
+      # Override the host-oriented values in api/.env: inside this network
+      # Postgres is `db:5432` and the Inngest dev server is `inngest:8288`.
+      # (Real env vars win over the .env file in pydantic-settings.)
+      CONFIG__POSTGRES__HOST: db
+      CONFIG__POSTGRES__PORT: "5432"
+      INNGEST_DEV: http://inngest:8288
+      # Single-process dev: role=all serves REST + the Inngest function host on
+      # one port (8101). Inngest points at app:8101/api/inngest below.
+      SMART_WROCLAW_ROLE: all
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:18
+    restart: unless-stopped
+    environment:
+      # Dev-only credentials — mirror the CONFIG__POSTGRES__* defaults in api/.env.
+      POSTGRES_USER: smart_wroclaw
+      POSTGRES_PASSWORD: smart_wroclaw
+      POSTGRES_DB: smart_wroclaw
+    volumes:
+      # postgres:18 stores data in a version subdir; mount the PARENT, not
+      # /var/lib/postgresql/data (the pre-18 path). Named volume keeps DB state
+      # out of the source tree.
+      - db_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U smart_wroclaw -d smart_wroclaw"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  inngest:
+    image: inngest/inngest:latest
+    # --no-discovery stops the dev server probing random localhost ports; -u
+    # points it at the app's function host. In role=all that host is on :8101.
+    command: inngest dev --no-discovery -u http://app:8101/api/inngest
+    restart: unless-stopped
+    depends_on:
+      - app
+
+  # Local-only data-labelling UI for the eval workflow (eval/event_extractor/).
+  # Paste eval/.../data/label_studio_config.xml as the project config and import
+  # label_studio_import.json; export the annotations back as JSON for
+  # label_studio_to_goldens.py. Data persists in the label_studio_data volume.
+  label-studio:
+    image: heartexlabs/label-studio:latest
+    restart: unless-stopped
+    environment:
+      # Bootstrap a superuser so there's no signup wall, and silence the
+      # outbound telemetry / "new version" pings — this instance is local only.
+      LABEL_STUDIO_USERNAME: admin@smart-wroclaw.local
+      LABEL_STUDIO_PASSWORD: labelstudio
+      COLLECT_ANALYTICS: "false"
+      LATEST_VERSION_CHECK: "false"
+    volumes:
+      - label_studio_data:/label-studio/data
+
+volumes:
+  venv:
+  ui-node-modules:
+  db_data:
+  label_studio_data:

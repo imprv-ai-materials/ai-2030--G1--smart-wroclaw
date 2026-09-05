@@ -1,0 +1,35 @@
+# Build context = project root (smart_wroclaw/). Applies to Dockerfile and
+# migrations.Dockerfile (both build with this dir as context).
+
+# --- ai/ layer: drop the dev-only eval assets --------------------------------
+# The version packages (versions/vN/) are CODE — the current.yaml pointer imports
+# one dynamically at boot, and any version can be promoted by config, so they all
+# ship. Only the evaluation inputs/definitions are dev-only.
+api/api/ai/*/datasets
+api/api/ai/*/evaluations
+api/api/ai/README.md
+
+# --- build hygiene ----------------------------------------------------------
+.venv/
+**/__pycache__/
+**/*.pyc
+.pytest_cache/
+.mypy_cache/
+.coverage
+coverage/
+dist/
+
+# not needed by the API/worker/migrations images
+ui/
+dev/
+docs/
+# infra files (used to BUILD the images, never copied INTO them)
+compose.yaml
+Tiltfile
+Dockerfile
+migrations.Dockerfile
+api/tests/
+api/.env
+api/.env.example
+.git/
+.gitignore

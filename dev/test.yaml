@@ -1,0 +1,21 @@
+context_parser: pypyr.parser.keyvaluepairs
+steps:
+  - pypyr.steps.debug
+  - pypyr.steps.configvars
+
+  - name: pypyr.steps.default
+    description: set default values for optional cli inputs
+    in:
+      defaults:
+        tests: '{test_dir}'
+        coverage: '{min_coverage}'
+
+  - name: pypyr.steps.cmd
+    description: Running tests
+    in:
+      cmd: poetry run pytest --cov={src_dir} --cov-fail-under={coverage} --ff -vv -m "not llm and not slow" {tests}
+
+on_failure:
+  - name: pypyr.steps.echo
+    in:
+      echoMe: Run `pypyr test tests=./tests/<module>.py` to run only particular tests.
