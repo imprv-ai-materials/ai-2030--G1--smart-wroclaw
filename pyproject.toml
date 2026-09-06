@@ -75,6 +75,12 @@ seed_events = { pipeline_name = "dev/seed_events" }
 start_tilt = { pipeline_name = "dev/start_tilt" }
 start_api = { pipeline_name = "dev/start_api" }
 start_worker = { pipeline_name = "dev/start_worker" }
+# Devcontainer path: one role=all backend process on :8101 that INHERITS the
+# container's INNGEST_DEV=http://inngest:8288. Use this INSTEAD of start_api +
+# start_worker inside the devcontainer — those set INNGEST_DEV to the native host
+# port (127.0.0.1:8488), which is unreachable in the container and makes chat
+# turns 500.
+start_be = { pipeline_name = "dev/start_be" }
 start_ui = { pipeline_name = "dev/start_ui" }
 format = { pipeline_name = "dev/format" }
 check_format = { pipeline_name = "dev/check_format" }

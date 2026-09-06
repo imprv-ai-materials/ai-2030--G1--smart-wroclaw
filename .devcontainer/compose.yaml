@@ -31,6 +31,11 @@ services:
       # survive rebuilds and stay off the slow bind mount.
       - venv:/workspaces/smart_wroclaw/.venv
       - ui-node-modules:/workspaces/smart_wroclaw/ui/node_modules
+      # Same rationale as node_modules: keep Next.js/Turbopack's build cache in a
+      # named volume so the container (a non-host uid) never writes into the
+      # host-owned .next on the bind mount — that cross-uid write is what triggers
+      # Turbopack's "failed to create directory … (os error 13)".
+      - ui-next:/workspaces/smart_wroclaw/ui/.next
     environment:
       # Override the host-oriented values in api/.env: inside this network
       # Postgres is `db:5432` and the Inngest dev server is `inngest:8288`.
@@ -76,4 +81,5 @@ services:
 volumes:
   venv:
   ui-node-modules:
+  ui-next:
   db_data:

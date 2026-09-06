@@ -1,0 +1,26 @@
+context_parser: pypyr.parser.keyvaluepairs
+steps:
+  - pypyr.steps.debug
+  - pypyr.steps.configvars
+
+  - name: pypyr.steps.env
+    description: Setting role=all (single-process dev)
+    in:
+      env:
+        set:
+          # DEVCONTAINER path: one process serves REST *and* the Inngest function
+          # host on :8101 (role=all). The .devcontainer compose points its Inngest
+          # dev server at app:8101/api/inngest and already exports the correct
+          # INNGEST_DEV=http://inngest:8288 — so, unlike start_api/start_worker,
+          # this pipeline deliberately does NOT set INNGEST_DEV. Overriding it with
+          # the native host value (127.0.0.1:8488) is what makes chat turns fail
+          # with "never received response while sending events".
+          SMART_WROCLAW_ROLE: 'all'
+
+  - name: pypyr.steps.cmd
+    description: Starting API + Inngest worker (role=all) on :8101
+    in:
+      # `--app-dir api` fixes `api.main` import shadowing; `--reload-dir api/api`
+      # keeps the reloader off ui/node_modules. Inherits INNGEST_DEV from the
+      # container env (inngest:8288).
+      cmd: poetry run uvicorn api.main:app --app-dir api --reload --reload-dir api/api --host 0.0.0.0 --port 8101

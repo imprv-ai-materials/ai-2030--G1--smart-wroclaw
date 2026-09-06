@@ -57,8 +57,17 @@ cat <<'DONE'
 
 ✅ Devcontainer ready. Start the stack from separate terminals:
 
-    poetry run uvicorn api.main:app --host 0.0.0.0 --reload --port 8101   # REST + Inngest worker (role=all)
-    pnpm --dir ui dev                                                     # Next.js UI
+    pypyr start_be      # REST + Inngest worker in ONE role=all process on :8101
+    pypyr start_ui      # Next.js UI
+
+⚠️  In the devcontainer use `pypyr start_be` — NOT `start_api` / `start_worker`.
+    Those target the native host stack: they set INNGEST_DEV=127.0.0.1:8488 (dead
+    inside the container) and split into two processes the container's Inngest dev
+    server (pointed at app:8101) won't discover — chat turns then fail with
+    "Coś poszło nie tak" (inngest send: "never received response").
+
+    Equivalent raw command if you prefer (inherits INNGEST_DEV=inngest:8288):
+    poetry run uvicorn api.main:app --host 0.0.0.0 --reload --port 8101
 
 Then open the forwarded ports (VS Code → Ports panel):
     UI            http://localhost:3100

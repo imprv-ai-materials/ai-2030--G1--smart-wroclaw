@@ -28,6 +28,16 @@ RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
  && corepack enable \
  && corepack prepare pnpm@latest --activate
 
+# Claude Code CLI — global npm install on the Node 20 toolchain above. Baked into
+# the image so `claude` is on PATH the moment the container starts (no per-create
+# download).
+RUN npm install -g @anthropic-ai/claude-code
+
+# `penv` shortcut → activate the in-project virtualenv from anywhere in the tree.
+# The .venv is a named volume populated by postCreate.sh's `poetry install`, so
+# the dev deps (pytest, black, mypy, …) resolve once you've run `penv`.
+RUN echo "alias penv='source /workspaces/smart_wroclaw/.venv/bin/activate'" >> /home/vscode/.bashrc
+
 # Poetry in its own isolated venv (pinned), then put it on PATH for every user.
 RUN python3 -m venv "${POETRY_HOME}" \
  && "${POETRY_HOME}/bin/pip" install --no-cache-dir "poetry==${POETRY_VERSION}"
