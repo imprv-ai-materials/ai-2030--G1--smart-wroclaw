@@ -144,7 +144,9 @@ def _run_geo(agent, row, ctx):
             "needs_user_location": scope.needs_user_location,
             "radius_m": scope.radius_m,
         }
-    return {"expected": expected}
+    # `resolvable` is graded on every row (so "should return no scope" is testable);
+    # the district / near-me fields are only graded when the gold expects a scope.
+    return {"expected": expected, "resolvable": scope is not None}
 
 
 _REGISTRY: dict[str, Adapter] = {

@@ -4,18 +4,21 @@
         guardrails ─ reject → refusal
             └ extractor → EventUnderstanding
                 └ router → search | report | analytics
-                    ├ search    : search_agent → ranked events (+ filters for the map)
-                    ├ report    : report_agent → draft + inline form | ready → create
-                    └ analytics : geo_resolver → scope, analytics_agent → count + reply
+                    ├ search    : geo_resolver (nearby → scope) → search_agent → ranked events
+                    ├ report    : report_agent → draft + inline form | confirm →
+                    │             geo_resolver (location → coords) → create
+                    └ analytics : geo_resolver (place → scope) → analytics_agent → count
 
-Each element is one of the versioned sub-agents; this module only sequences them and
-templates the deterministic Markdown reply. The create-on-confirm is a service call.
+geo_resolver is the shared location tool: it scopes search + analytics to a place /
+radius and resolves the new report's coordinates on create. Each element is a
+versioned sub-agent; this module only sequences them + templates the reply.
 """
 
 from __future__ import annotations
 
 from typing import Any
 
+from api.adapters import trace
 from api.ai.analytics_agent import AbstractAnalyticsAgent
 from api.ai.event_extractor import AbstractEventExtractor
 from api.ai.geo_resolver import AbstractGeoResolver
@@ -149,29 +152,90 @@ class MainAgent(AbstractMainAgent):
         reporter_id: int | None = None,
         reporter_confirmed: bool = False,
     ) -> dict[str, Any]:
+        trace.begin()  # fresh per-turn trace (component · data · tokens · model)
+        result = self._run_turn(
+            text,
+            history,
+            fields=fields,
+            action=action,
+            prior_draft=prior_draft,
+            reporter_id=reporter_id,
+            reporter_confirmed=reporter_confirmed,
+        )
+        result["trace"] = trace.collect()
+        return result
+
+    def _run_turn(
+        self,
+        text: str,
+        history: list[dict[str, str]] | None,
+        *,
+        fields: dict[str, Any] | None,
+        action: str | None,
+        prior_draft: dict[str, Any] | None,
+        reporter_id: int | None,
+        reporter_confirmed: bool,
+    ) -> dict[str, Any]:
         # A pure confirm/commit turn — no text to guard, extract or route.
         if action == "confirm":
             return self._confirm_turn(prior_draft, reporter_id, reporter_confirmed)
 
         # Inline-form answers are structured input, so an empty text box is fine.
         has_fields = bool(fields)
+        mark = trace.mark()
         verdict = self._guardrails.check(text, history)
+        trace.add("guardrails_agent", input=text, output={"allow": verdict.allow, "reason": verdict.reason}, since=mark)
         if not verdict.allow and not has_fields:
             return {"status": "blocked", "reason": verdict.reason, "reply": block_reply(verdict.reason)}
 
+        mark = trace.mark()
         u = self._extractor.extract(text, history=history)
+        trace.add("event_extractor", input=text, output=u, since=mark)
+
         # Answering the inline form always continues the report flow.
-        intent = "report" if has_fields else self._router.route(text, u, history).intent.value
+        if has_fields:
+            intent = "report"
+        else:
+            mark = trace.mark()
+            decision = self._router.route(text, u, history)
+            intent = decision.intent.value
+            trace.add(
+                "router_agent",
+                input=text,
+                output={"intent": intent, "confidence": decision.confidence},
+                since=mark,
+            )
 
         if intent == "report":
             return self._report_turn(u, fields=fields, prior_draft=prior_draft)
         if intent == "analytics":
             return self._analytics_turn(u, text)
-        return self._search_turn(u)  # search is also the defensive default
+        return self._search_turn(u, text)  # search is also the defensive default
+
+    def _turn_scope(self, u: EventUnderstanding, text: str) -> dict[str, Any] | None:
+        """Resolve the turn's location mention to a geo scope via geo_resolver —
+        shared by search ("events nearby") and analytics ("… in my district"). A
+        "near me" scope needs the user's own coordinates (not wired yet), so we
+        return None rather than an unbounded radius."""
+        hint = u.location_text or u.address or u.district or text
+        mark = trace.mark()
+        resolved = self._geo.resolve(hint) if hint else None
+        trace.add("geo_resolver", input=hint, output=(resolved.model_dump() if resolved else None), since=mark)
+        if resolved is None or resolved.needs_user_location:
+            return None
+        return {"district": resolved.district, "lat": resolved.lat, "lng": resolved.lng, "radius_m": resolved.radius_m}
 
     # -- lanes ----------------------------------------------------------------
-    def _search_turn(self, u: EventUnderstanding) -> dict[str, Any]:
-        results = self._search.search(u)
+    def _search_turn(self, u: EventUnderstanding, text: str) -> dict[str, Any]:
+        scope = self._turn_scope(u, text)  # narrow to a place / radius when one is named
+        mark = trace.mark()
+        results = self._search.search(u, scope=scope)
+        trace.add(
+            "search_agent",
+            input={"filters": to_search_filters(u), "scope": scope},
+            output=f"{len(results)} events",
+            since=mark,
+        )
         return {
             "status": "ok",
             "intent": "search",
@@ -183,7 +247,14 @@ class MainAgent(AbstractMainAgent):
     def _report_turn(
         self, u: EventUnderstanding, *, fields: dict[str, Any] | None, prior_draft: dict[str, Any] | None
     ) -> dict[str, Any]:
+        mark = trace.mark()
         turn = self._report.plan_turn(u, prior_draft=prior_draft, fields=fields)
+        trace.add(
+            "report_agent",
+            input={"prior_draft": prior_draft, "fields": fields},
+            output={"missing_fields": turn.missing_fields, "ready": turn.ready},
+            since=mark,
+        )
         if turn.missing_fields:
             return {
                 "status": "ok",
@@ -204,19 +275,15 @@ class MainAgent(AbstractMainAgent):
         }
 
     def _analytics_turn(self, u: EventUnderstanding, text: str) -> dict[str, Any]:
-        hint = u.location_text or u.address or u.district or text
-        resolved = self._geo.resolve(hint) if hint else None
-        # A "near me" scope needs the user's own coordinates (not available here yet),
-        # so fall back to a whole-city count rather than an unbounded radius.
-        scope = None
-        if resolved is not None and not resolved.needs_user_location:
-            scope = {
-                "district": resolved.district,
-                "lat": resolved.lat,
-                "lng": resolved.lng,
-                "radius_m": resolved.radius_m,
-            }
+        scope = self._turn_scope(u, text)
+        mark = trace.mark()
         answer = self._analytics.answer(u, scope=scope)
+        trace.add(
+            "analytics_agent",
+            input={"filters": to_search_filters(u), "scope": scope},
+            output={"count": answer.count, "breakdown": answer.breakdown},
+            since=mark,
+        )
         return {
             "status": "ok",
             "intent": "analytics",
@@ -258,18 +325,24 @@ class MainAgent(AbstractMainAgent):
                 "ready": True,
             }
         event = self._create(draft, reporter_id)
+        # Only ask the background HERE pass to run if geo couldn't place it up front.
+        needs_geocode = (event.lat is None or event.lng is None) and bool(event.location_text or event.address)
         return {
             "status": "ok",
             "intent": "report",
             "reply": f"✅ Dodano zgłoszenie: **{event.title}**. Dziękujemy!",
             "created": event,
-            "geocode": bool(event.location_text or event.address),
+            "geocode": needs_geocode,
         }
 
     def _create(self, draft: dict[str, Any], reporter_id: int) -> CityEvent:
-        """Persist a completed draft. Coordinates are enriched afterwards (HERE via
-        Inngest) by the caller — see the chat router's `geocode` signal."""
+        """Persist a completed draft, resolving its coordinates up front via the
+        geo_resolver (location → lat/lng). If geo can't place it (offline, or an
+        unrecognised address), lat/lng stay None and the caller's background HERE
+        pass fills them — see the chat router's `geocode` signal."""
         typed = coerce_draft_for_create(draft)
+        where = typed.get("address") or typed.get("location_text") or typed.get("district")
+        point = self._geo.resolve(where) if where else None
         return self._events.create_event(
             type_=typed["type_"],
             title=typed["title"],
@@ -280,7 +353,9 @@ class MainAgent(AbstractMainAgent):
             subtype=typed.get("subtype"),
             location_text=typed.get("location_text"),
             address=typed.get("address"),
-            district=typed.get("district"),
+            district=typed.get("district") or (point.district if point else None),
+            lat=point.lat if point else None,
+            lng=point.lng if point else None,
             starts_at=typed.get("starts_at"),
             ends_at=typed.get("ends_at"),
         )

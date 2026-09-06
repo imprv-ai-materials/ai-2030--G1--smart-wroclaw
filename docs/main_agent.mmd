@@ -19,6 +19,8 @@ flowchart TD
         R -->|search| S
         R -->|report| RP
         R -->|analytics| AN
+        GEO -. nearby .-> S
+        GEO -. coords .-> RP
         GEO -. scope .-> AN
     end
 

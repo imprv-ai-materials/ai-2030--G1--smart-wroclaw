@@ -17,6 +17,7 @@ import {
   ExternalLink,
   MapPin,
   MessagesSquare,
+  Plus,
   Share2,
   X,
 } from "lucide-react";
@@ -57,12 +58,27 @@ export default function HomePage() {
   // the same conversation.
   const [chatOpen, setChatOpen] = useState(false);
   const [detailsEvent, setDetailsEvent] = useState<CityEvent | null>(null);
+  // Bumped to remount `AgentChat` with a clean slate when starting anew.
+  const [chatKey, setChatKey] = useState(0);
 
   const openChat = useCallback(() => {
     // Always show the chat: dismiss any open details so the entry button doesn't
     // just re-show the details with a back arrow.
     setDetailsEvent(null);
     setChatOpen(true);
+  }, []);
+
+  const startNewConversation = useCallback(() => {
+    // Drop the resumed conversation from the URL and remount the chat fresh, so
+    // the next turn starts a brand-new conversation server-side.
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      url.searchParams.delete("chat");
+      window.history.replaceState(null, "", url);
+    }
+    setDetailsEvent(null);
+    setChatOpen(true);
+    setChatKey((k) => k + 1);
   }, []);
   const openDetails = useCallback((event: CityEvent) => setDetailsEvent(event), []);
   const openDetailsById = useCallback(
@@ -112,24 +128,23 @@ export default function HomePage() {
         myReporterId={user?.id}
       />
 
-      {/* Floating top controls: brand + account on the left, chat entry centered. */}
+      {/* Floating top controls: brand + account fab on the left, the chat entry
+          trigger sitting right next to it. */}
       <div className="pointer-events-none absolute inset-x-0 top-4 z-20 flex items-start gap-2 px-4">
         <HomeTopControls />
-        <div className="flex min-w-0 flex-1 justify-center">
-          <button
-            type="button"
-            onClick={openChat}
-            className="pointer-events-auto flex w-full max-w-md items-center gap-2.5 rounded-full border bg-background/85 px-4 py-2.5 text-left shadow-lg backdrop-blur transition-colors hover:bg-background"
-          >
-            <MessagesSquare className="size-4 shrink-0" />
-            <span className="flex-1 truncate text-sm text-muted-foreground">
-              Zgłoś awarię, zdarzenie lub zapytaj o miasto…
-            </span>
-            <span className="rounded-full bg-primary px-2.5 py-1 text-xs font-medium text-primary-foreground">
-              Napisz
-            </span>
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={openChat}
+          className="pointer-events-auto flex min-w-0 flex-1 items-center gap-2.5 rounded-full border bg-background/85 px-4 py-2.5 text-left shadow-lg backdrop-blur transition-colors hover:bg-background md:max-w-md"
+        >
+          <MessagesSquare className="size-4 shrink-0" />
+          <span className="flex-1 truncate text-sm text-muted-foreground">
+            Zgłoś awarię, zdarzenie lub zapytaj o miasto…
+          </span>
+          <span className="rounded-full bg-primary px-2.5 py-1 text-xs font-medium text-primary-foreground">
+            Napisz
+          </span>
+        </button>
       </div>
 
       {/* Bottom events strip */}
@@ -182,10 +197,11 @@ export default function HomePage() {
           title={detailsEvent ? "Szczegóły zdarzenia" : "Asystent miasta"}
           onClose={closePanel}
           onBack={detailsEvent && chatOpen ? closeDetails : undefined}
+          onNew={chatOpen && !detailsEvent ? startNewConversation : undefined}
         >
           {chatOpen ? (
             <div className={cn("h-full", detailsEvent && "hidden")}>
-              <AgentChat onOpenEvent={openDetails} />
+              <AgentChat key={chatKey} onOpenEvent={openDetails} />
             </div>
           ) : null}
           {detailsEvent ? <EventDetails event={detailsEvent} /> : null}
@@ -199,11 +215,13 @@ function RightPanel({
   title,
   onClose,
   onBack,
+  onNew,
   children,
 }: {
   title: string;
   onClose: () => void;
   onBack?: () => void;
+  onNew?: () => void;
   children: React.ReactNode;
 }) {
   return (
@@ -236,6 +254,17 @@ function RightPanel({
           <h2 className="min-w-0 flex-1 truncate text-sm font-semibold">
             {title}
           </h2>
+          {onNew ? (
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              onClick={onNew}
+              aria-label="Nowa rozmowa"
+              title="Nowa rozmowa"
+            >
+              <Plus className="size-4" />
+            </Button>
+          ) : null}
           <Button
             variant="ghost"
             size="icon-sm"

@@ -5,6 +5,11 @@ name: geocoding
 description: District / near-me / unresolvable scope over location mentions.
 dataset: geo
 assertions:
+  # Graded on every row: does a scope come back at all? (Catches "city name / in
+  # total → no narrowing" — chat 3 — which the field checks below would skip.)
+  - id: resolvable_match
+    kind: field_equals
+    field: resolvable
   - id: district_match
     kind: field_equals
     field: expected.district

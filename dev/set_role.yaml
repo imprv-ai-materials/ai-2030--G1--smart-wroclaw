@@ -1,0 +1,42 @@
+# `pypyr set_role` — set a user's role (ADMIN sees the agent trace under chat replies).
+#
+#   pypyr set_role user=me@example.com role=ADMIN
+#   pypyr set_role user=me@example.com role=BASIC     # role defaults to ADMIN
+#
+# Needs Postgres up + migrations applied (`pypyr migrate`). Reads CONFIG__POSTGRES__*
+# from api/.env, the same as the app.
+context_parser: pypyr.parser.keyvaluepairs
+steps:
+  - pypyr.steps.debug
+  - pypyr.steps.configvars
+
+  - name: pypyr.steps.env
+    description: Put api/ on sys.path (the package lives at api/api).
+    in:
+      env:
+        set:
+          PYTHONPATH: 'api'
+
+  - name: pypyr.steps.default
+    description: default values for optional inputs
+    in:
+      defaults:
+        user: ''
+        role: 'ADMIN'
+
+  - name: pypyr.steps.py
+    description: require an email
+    in:
+      pycode: |
+        if not str(context.get("user", "")).strip():
+            raise ValueError("needs user=<email>")
+
+  - name: pypyr.steps.cmd
+    description: Set the user's role
+    in:
+      cmd: poetry run python api/tests/manual/set_user_role.py {user} {role}
+
+on_failure:
+  - name: pypyr.steps.echo
+    in:
+      echoMe: "Usage: pypyr set_role user=<email> role=ADMIN|BASIC"

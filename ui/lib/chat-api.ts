@@ -8,9 +8,28 @@
 import { api } from "@/lib/api-client";
 import type { CityEvent } from "@/lib/events-api";
 
-export type ChatIntent = "search" | "add" | "answer";
+export type ChatIntent = "search" | "report" | "analytics";
 
 export type ChatTurnStatus = "ok" | "blocked" | "login_required" | "email_unconfirmed";
+
+// Per-turn agent trace (ADMIN-only) — which component ran, with what data, at what
+// token cost and on which model. The API only sends this to ADMIN accounts.
+export type ChatTraceStep = {
+  component: string;
+  input?: string | null;
+  output?: string | null;
+  models: string[];
+  prompt_tokens: number;
+  completion_tokens: number;
+  llm_calls: number;
+};
+export type ChatTrace = {
+  steps: ChatTraceStep[];
+  llm_calls: number;
+  prompt_tokens: number;
+  completion_tokens: number;
+  total_tokens: number;
+};
 
 export type ChatTurnFilters = {
   type_?: string | null;
@@ -44,6 +63,7 @@ export type ChatTurnResult = {
   form?: ChatFormField[] | null;
   ready?: boolean | null;
   created?: CityEvent | null;
+  trace?: ChatTrace | null;
 };
 
 export type ChatTurnInput = {

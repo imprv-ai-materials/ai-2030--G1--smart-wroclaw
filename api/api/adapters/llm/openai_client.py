@@ -45,6 +45,7 @@ class OpenAIClient:
                 {"role": "user", "content": user},
             ],
         )
+        self._record_usage(resp, model or self._default_model_name)
         return (resp.choices[0].message.content or "").strip()
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=1, max=8))
@@ -65,9 +66,25 @@ class OpenAIClient:
                 },
             ],
         )
+        self._record_usage(resp, model or self._default_model_name)
         raw = resp.choices[0].message.content or "{}"
         try:
             return schema.model_validate_json(raw)
         except Exception:
             logger.exception("failed to parse structured LLM output: {}", raw)
             raise
+
+    @staticmethod
+    def _record_usage(resp, model_fallback: str) -> None:
+        """Push this call's token usage + model onto the active per-turn trace (a
+        no-op when no trace is running — e.g. under the eval harness)."""
+        from api.adapters.trace import record_llm
+
+        usage = getattr(resp, "usage", None)
+        if usage is None:
+            return
+        record_llm(
+            model=getattr(resp, "model", None) or model_fallback,
+            prompt_tokens=getattr(usage, "prompt_tokens", 0) or 0,
+            completion_tokens=getattr(usage, "completion_tokens", 0) or 0,
+        )

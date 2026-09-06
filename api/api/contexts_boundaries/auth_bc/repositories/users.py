@@ -2,7 +2,7 @@ import abc
 from datetime import datetime, timezone
 
 from api.adapters.db import DBClient
-from api.contexts_boundaries.auth_bc.models import User
+from api.contexts_boundaries.auth_bc.models import User, UserRole
 from api.contexts_boundaries.auth_bc.repositories.tables import users_table
 
 
@@ -21,6 +21,9 @@ class AbstractUsersRepository(abc.ABC):
 
     @abc.abstractmethod
     def set_password_hash(self, user_id: int, password_hash: str) -> User | None: ...
+
+    @abc.abstractmethod
+    def set_role(self, user_id: int, role: UserRole) -> User | None: ...
 
 
 class UsersRepository(AbstractUsersRepository):
@@ -63,5 +66,13 @@ class UsersRepository(AbstractUsersRepository):
             users_table,
             {"id": user_id},
             {"password_hash": password_hash, "updated_at": datetime.now(tz=timezone.utc)},
+        )
+        return self.get_by_id(user_id)
+
+    def set_role(self, user_id: int, role: UserRole) -> User | None:
+        self._db.update_one(
+            users_table,
+            {"id": user_id},
+            {"role": UserRole(role).value, "updated_at": datetime.now(tz=timezone.utc)},
         )
         return self.get_by_id(user_id)

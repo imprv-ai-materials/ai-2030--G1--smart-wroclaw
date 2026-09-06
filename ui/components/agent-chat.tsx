@@ -19,7 +19,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { APIError } from "@/lib/api-client";
 import { chatApi } from "@/lib/chat-api";
-import type { ChatFormField, ChatTurnInput, ChatTurnStatus } from "@/lib/chat-api";
+import type { ChatFormField, ChatTrace, ChatTurnInput, ChatTurnStatus } from "@/lib/chat-api";
 import type {
   CityEvent,
   EventFilters,
@@ -36,6 +36,8 @@ type ChatMsg = {
   form?: ChatFormField[];
   ready?: boolean;
   status?: ChatTurnStatus;
+  // Per-turn agent trace — present only for ADMIN accounts (the API gates it).
+  trace?: ChatTrace;
 };
 
 function readChatId(): number | null {
@@ -92,6 +94,7 @@ export function AgentChat({
               form: (data.form as ChatFormField[] | undefined) ?? undefined,
               ready: (data.ready as boolean | undefined) ?? undefined,
               status: (data.status as ChatTurnStatus | undefined) ?? undefined,
+              trace: (data.trace as ChatTrace | undefined) ?? undefined,
             };
           }),
         );
@@ -139,6 +142,7 @@ export function AgentChat({
           form: res.form ?? undefined,
           ready: res.ready ?? undefined,
           status: res.status,
+          trace: res.trace ?? undefined,
         },
       ]);
       if (res.intent === "search" && res.filters && onSearch) {
@@ -328,6 +332,50 @@ function ChatBubble({
           </Button>
         )
       ) : null}
+
+      {/* ADMIN-only per-turn agent trace (component · data · tokens · model). The
+          API only sends `trace` to ADMIN accounts, so this simply renders when present. */}
+      {!isUser && message.trace ? <AgentTrace trace={message.trace} /> : null}
     </div>
+  );
+}
+
+function AgentTrace({ trace }: { trace: ChatTrace }) {
+  return (
+    <details className="w-full max-w-[90%] self-start text-xs text-muted-foreground">
+      <summary className="inline-flex cursor-pointer select-none items-center py-0.5 list-none marker:content-none [&::-webkit-details-marker]:hidden hover:text-foreground hover:underline">
+        Trace — {trace.steps.length}{" "}
+        {trace.steps.length === 1 ? "komponent" : "komponenty"} · {trace.llm_calls} wyw. LLM ·{" "}
+        {trace.total_tokens} tok.
+      </summary>
+      <div className="mt-1.5 space-y-2 border-l pl-3">
+        {trace.steps.map((step, i) => (
+          <div key={i} className="space-y-0.5">
+            <div className="flex items-baseline justify-between gap-2">
+              <span className="font-mono font-semibold text-foreground">{step.component}</span>
+              <span className="font-mono tabular-nums">
+                {step.models.length ? step.models.join(", ") : "—"} · {step.prompt_tokens}+
+                {step.completion_tokens} tok
+              </span>
+            </div>
+            {step.input ? (
+              <div className="break-all font-mono">
+                <span className="opacity-60">in </span>
+                {step.input}
+              </div>
+            ) : null}
+            {step.output ? (
+              <div className="break-all font-mono">
+                <span className="opacity-60">out </span>
+                {step.output}
+              </div>
+            ) : null}
+          </div>
+        ))}
+        <div className="border-t pt-1 font-mono tabular-nums">
+          Σ {trace.prompt_tokens}+{trace.completion_tokens} = {trace.total_tokens} tokenów
+        </div>
+      </div>
+    </details>
   );
 }

@@ -72,23 +72,37 @@ REQUIRED_FIELDS: dict[EventType, tuple[str, ...]] = {
 }
 
 
+# The app IS Wrocław, so the city name (and "whole city" phrasings) is never a
+# useful DISTRICT facet — events carry a *sub-district* (Krzyki, Nadodrze, …), so
+# filtering by district="Wrocław" matches nothing and silently zeroes the result.
+# (chat 3: "ile we Wrocławiu / w całym Wrocławiu" kept counting 0.) Fold diacritics
+# so "Wrocławiu" etc. all collapse to the same token.
+_PL_FOLD = str.maketrans("ąćęłńóśźż", "acelnoszz")
+_CITY_WIDE = {"wroclaw", "caly wroclaw", "cale miasto", "miasto", "w sumie", "lacznie", "ogolem"}
+
+
+def _district_facet(district: str | None) -> str | None:
+    """A sub-district worth filtering by, or None when the mention is city-wide."""
+    if not district:
+        return None
+    folded = district.strip().lower().translate(_PL_FOLD)
+    return None if any(city in folded for city in _CITY_WIDE) else district
+
+
 def to_search_filters(u: EventUnderstanding) -> dict[str, Any]:
     """Project onto `EventsService.list_events` kwargs (the search tool input).
 
     OTHER is treated as "unspecified" for filtering — the extractor uses it as a
     catch-all (and the eval scores it), but it must not over-constrain a search.
     """
-    category = (
-        u.category
-        if u.category is not None and u.category != ReportCategory.OTHER
-        else None
-    )
+    category = u.category if u.category is not None and u.category != ReportCategory.OTHER else None
+    district = _district_facet(u.district)  # never let "Wrocław" become a filter
     # Free-text `q` is a substring match, so it only helps when there's nothing
     # structured to filter on — otherwise it double-counts (e.g. "awarie Krzyki"
     # over ISSUE+Krzyki) and zeroes out the results. Structured wins; else q.
-    has_structure = u.type is not None or category is not None or u.district is not None
+    has_structure = u.type is not None or category is not None or district is not None
     q = None if has_structure else (" ".join(u.keywords).strip() or (u.summary or "").strip() or None)
-    return {"type_": u.type, "category": category, "district": u.district, "q": q}
+    return {"type_": u.type, "category": category, "district": district, "q": q}
 
 
 def to_event_draft(u: EventUnderstanding) -> dict[str, Any]:
@@ -155,8 +169,14 @@ def fields_to_draft(fields: dict[str, Any] | None) -> dict[str, Any]:
         elif key == "location":
             out["address"] = raw
         elif key in (
-            "title", "description", "subtype", "address",
-            "location_text", "district", "starts_at", "ends_at",
+            "title",
+            "description",
+            "subtype",
+            "address",
+            "location_text",
+            "district",
+            "starts_at",
+            "ends_at",
         ):
             out[key] = raw
     return out
@@ -182,10 +202,7 @@ def coerce_draft_for_create(draft: dict[str, Any]) -> dict[str, Any]:
     `type` becomes `type_` to match the service signature."""
     out = dict(draft)
     raw_type = out.pop("type", None)
-    out["type_"] = (
-        raw_type if raw_type is None or isinstance(raw_type, EventType)
-        else EventType(raw_type)
-    )
+    out["type_"] = raw_type if raw_type is None or isinstance(raw_type, EventType) else EventType(raw_type)
     for key, enum in (("category", ReportCategory), ("severity", Severity)):
         value = out.get(key)
         if value is not None and not isinstance(value, enum):

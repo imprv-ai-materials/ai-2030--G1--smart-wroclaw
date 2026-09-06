@@ -80,7 +80,9 @@ class AnalyticsAgent(AbstractAnalyticsAgent):
             key = e.type.value if e.type else "OTHER"
             breakdown[key] = breakdown.get(key, 0) + 1
 
-        reply = self._phrase(count, understanding, scope)
+        # Phrase the "where" from the NORMALISED district (filters), so a city-wide
+        # query never reads back as "w dzielnicy Wrocław" (chat 3).
+        reply = self._phrase(count, filters["district"], scope)
         return AnalyticsAnswer(count=count, breakdown=breakdown, reply=reply, scope=scope)
 
     @staticmethod
@@ -100,14 +102,14 @@ class AnalyticsAgent(AbstractAnalyticsAgent):
             ]
         return events
 
-    def _phrase(self, count: int, u: EventUnderstanding, scope: dict[str, Any] | None) -> str:
+    def _phrase(self, count: int, district: str | None, scope: dict[str, Any] | None) -> str:
         where = ""
         if scope and scope.get("district"):
             where = f" w dzielnicy {scope['district']}"
         elif scope and scope.get("radius_m"):
             where = f" w promieniu {round(scope['radius_m'] / 1000, 1)} km"
-        elif u.district:
-            where = f" w dzielnicy {u.district}"
+        elif district:
+            where = f" w dzielnicy {district}"
         templated = (
             f"Nie znalazłem pasujących zdarzeń{where}."
             if count == 0

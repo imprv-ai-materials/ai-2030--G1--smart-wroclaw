@@ -12,6 +12,15 @@ class TokenKind(StrEnum):
     RESET_PASSWORD = "RESET_PASSWORD"
 
 
+class UserRole(StrEnum):
+    """Coarse authorization level per account. BASIC (default) is a normal
+    resident; ADMIN additionally sees the per-turn agent trace under each chat
+    reply. Promote with `pypyr set_role user=<email> role=ADMIN`."""
+
+    BASIC = "BASIC"
+    ADMIN = "ADMIN"
+
+
 class User(BaseModel):
     """A resident account.
 
@@ -25,9 +34,14 @@ class User(BaseModel):
     email: str
     password_hash: str
     email_confirmed: bool = False
+    role: UserRole = UserRole.BASIC
     phone: str | None = None
     created_at: datetime
     updated_at: datetime
+
+    @property
+    def is_admin(self) -> bool:
+        return self.role == UserRole.ADMIN
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "User":
@@ -36,6 +50,7 @@ class User(BaseModel):
             email=data["email"],
             password_hash=data["password_hash"],
             email_confirmed=bool(data.get("email_confirmed")),
+            role=UserRole(data.get("role") or UserRole.BASIC.value),
             phone=data.get("phone"),
             created_at=data["created_at"],
             updated_at=data["updated_at"],

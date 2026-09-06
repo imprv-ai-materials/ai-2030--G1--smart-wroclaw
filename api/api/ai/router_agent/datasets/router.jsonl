@@ -7,3 +7,6 @@
 {"id": "analytics-count-lights", "text": "Ile latarni nie świeci w Śródmieściu?", "intent": "analytics", "difficulty": "easy", "note": "", "split": "dev"}
 {"id": "analytics-neighbourhood", "text": "Ilu zaginionych psów jest w mojej okolicy?", "intent": "analytics", "difficulty": "medium", "note": "zasięg = okolica użytkownika", "split": "dev"}
 {"id": "analytics-total", "text": "Jak wiele zgłoszeń drogowych mamy łącznie w tym tygodniu?", "intent": "analytics", "difficulty": "hard", "note": "", "split": "test"}
+{"id": "analytics-followup-count", "text": "A ile zwierząt zaginęło?", "intent": "analytics", "difficulty": "hard", "note": "kontynuacja po wyszukiwaniu → pytanie o liczbę (chat 3)", "split": "dev"}
+{"id": "analytics-total", "text": "Pytam się, ile w sumie odnotowano zaginionych zwierząt.", "intent": "analytics", "difficulty": "hard", "note": "'w sumie' = statystyka (chat 3)", "split": "dev"}
+{"id": "analytics-whole-city", "text": "Chodzi mi o cały Wrocław, ile we Wrocławiu jest takich zgłoszeń?", "intent": "analytics", "difficulty": "medium", "note": "'ile ... we Wrocławiu' (chat 3)", "split": "dev"}

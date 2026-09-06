@@ -96,6 +96,9 @@ async def chat_turn(
                 "ready": result.get("ready"),
                 "status": result.get("status"),
                 "created_event_id": created.id if created is not None else None,
+                # Per-turn agent trace (component · data · tokens · model). Stored on
+                # every turn; only ever RETURNED to ADMINs (below + on message reload).
+                "trace": result.get("trace"),
             }
         ),
     )
@@ -104,6 +107,9 @@ async def chat_turn(
 
     # `geocode` is an internal signal to this endpoint, not part of the API.
     result.pop("geocode", None)
+    # The per-turn agent trace is ADMIN-only — strip it for everyone else.
+    if not (current and current.is_admin):
+        result.pop("trace", None)
     return {"conversation_id": conversation.id, **result}
 
 
@@ -130,4 +136,10 @@ def conversation_messages(
     # reachable by anyone holding its id (the id is the only key).
     if conversation.user_id is not None and (current is None or current.id != conversation.user_id):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="brak dostępu do rozmowy")
-    return repo.list_messages(conversation_id, limit=200)
+    messages = repo.list_messages(conversation_id, limit=200)
+    # The per-turn agent trace stored on each assistant message is ADMIN-only.
+    if not (current and current.is_admin):
+        for message in messages:
+            if isinstance(message.data, dict):
+                message.data.pop("trace", None)
+    return messages

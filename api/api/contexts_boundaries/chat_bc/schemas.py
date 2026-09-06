@@ -30,3 +30,5 @@ class ChatTurnResponse(BaseModel):
     # analytics turn: the count + its per-type breakdown
     count: int | None = None
     breakdown: dict[str, int] | None = None
+    # per-turn agent trace (component · data · tokens · model) — returned to ADMINs only
+    trace: dict[str, Any] | None = None

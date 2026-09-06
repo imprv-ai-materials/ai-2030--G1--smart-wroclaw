@@ -1,1 +1,0 @@
-{"ts": "2026-09-06T12:25:31+00:00", "agent": "event_extractor", "version": "v1", "dataset": "category_dataset", "split": "dev", "sample": 50, "mode": "classification", "metrics": {"accuracy": 0.9286}}

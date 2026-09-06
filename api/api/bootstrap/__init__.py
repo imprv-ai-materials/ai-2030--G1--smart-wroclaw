@@ -17,6 +17,7 @@ from api.adapters.db import DBClient
 from api.adapters.email import AbstractEmailClient, build_email_client
 from api.adapters.geocoding import HereGeocodingClient
 from api.adapters.llm import OpenAIClient
+from api.adapters.notifications import NotificationBus
 from api.adapters.websockets import WebSocketManager
 from api.ai import load_current
 from api.ai.analytics_agent import AbstractAnalyticsAgent
@@ -39,7 +40,7 @@ from api.bootstrap.agents import (
 from api.config import Config, config
 from api.contexts_boundaries.auth_bc.repositories import AuthTokensRepository, UsersRepository
 from api.contexts_boundaries.auth_bc.services import AuthService
-from api.contexts_boundaries.chat_bc import ChatRepository
+from api.contexts_boundaries.chat_bc import AgentRunsRepository, ChatRepository
 from api.contexts_boundaries.city_events_bc.repositories import EventsRepository
 from api.contexts_boundaries.city_events_bc.services import EventsService
 from psycopg_pool import ConnectionPool
@@ -90,6 +91,14 @@ class Bootstrap:
     @cached_property
     def websocket_manager(self) -> WebSocketManager:
         return WebSocketManager()
+
+    @cached_property
+    def notification_bus(self) -> NotificationBus:
+        # The cross-process bridge: the worker NOTIFYs step progress, the API
+        # LISTENs and relays it to the WebSocket sockets (see main.py).
+        pg = self.config.postgres
+        conninfo = f"host={pg.host} port={pg.port} dbname={pg.db} user={pg.user} password={pg.password}"
+        return NotificationBus(conninfo)
 
     @cached_property
     def email_client(self) -> AbstractEmailClient:
@@ -178,6 +187,10 @@ class Bootstrap:
     @cached_property
     def chat_repository(self) -> ChatRepository:
         return ChatRepository(self.db_client)
+
+    @cached_property
+    def agent_runs_repository(self) -> AgentRunsRepository:
+        return AgentRunsRepository(self.db_client)
 
 
 _bootstrap: Bootstrap | None = None

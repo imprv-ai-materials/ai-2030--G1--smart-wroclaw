@@ -8,6 +8,7 @@ eval corpus; ranking quality is scored by the `main_agent` IR loop.
 """
 
 from abc import ABC, abstractmethod
+from typing import Any
 
 from api.contexts_boundaries.city_events_bc.models import (
     CityEvent,
@@ -22,9 +23,12 @@ class AbstractSearchAgent(ABC):
         self,
         understanding: EventUnderstanding,
         *,
+        scope: dict[str, Any] | None = None,
         status: EventStatus | None = None,
         k: int | None = None,
     ) -> list[CityEvent]:
-        """Return events matching `understanding`, best first. `status` optionally
-        constrains the feed (e.g. only ACTIVE); `k` caps the window (chat shows 6)."""
+        """Return events matching `understanding`, best first. `scope` is a geo
+        narrowing from the geo_resolver — a `{district}` or a `{lat,lng,radius_m}`
+        for "events nearby". `status` optionally constrains the feed (e.g. only
+        ACTIVE); `k` caps the window (chat shows 6)."""
         ...

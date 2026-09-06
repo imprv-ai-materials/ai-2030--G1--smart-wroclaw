@@ -82,6 +82,7 @@ lint = { pipeline_name = "dev/lint" }
 test = { pipeline_name = "dev/test" }
 eval = { pipeline_name = "dev/eval" }
 annotate = { pipeline_name = "dev/annotate" }
+set_role = { pipeline_name = "dev/set_role" }
 precommit = { pipeline_name = "dev/precommit" }
 render_er = { pipeline_name = "dev/render_db_er_diagram" }
 

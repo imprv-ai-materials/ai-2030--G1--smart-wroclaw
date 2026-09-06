@@ -50,6 +50,11 @@ _NEIGHBOURHOOD_TELLS = (
     "niedaleko mnie",
     "w mojej dzielnic",
 )
+# Whole-city / "in total" phrasings — "Wrocław" is the city, not a district, so
+# these mean NO geographic narrowing (return no scope), never a point to geocode.
+# Without this, HERE geocodes "Wrocław" to the centroid + a default radius and the
+# count comes back near-empty (chat 3: "w promieniu 1,5 km nie odnotowano").
+_WHOLE_CITY = ("wroclaw", "caly wroclaw", "cale miasto", "w sumie", "lacznie", "ogolem")
 
 _FOLD = str.maketrans("ąćęłńóśźż", "acelnoszz")
 
@@ -99,6 +104,11 @@ class GeoResolver(AbstractGeoResolver):
         for district in _DISTRICTS:
             if _matches_district(_fold(district), low, tokens):
                 return GeoScope(query=q, district=district)
+
+        # City-wide? (checked AFTER sub-districts so "we Wrocławiu na Krzykach" still
+        # scopes to Krzyki, but a bare "Wrocław" / "w sumie" narrows to nothing.)
+        if any(term in low for term in _WHOLE_CITY):
+            return None
 
         if self._geocoder is not None and self._geocoder.is_configured:
             result = self._geocoder.geocode(q)
