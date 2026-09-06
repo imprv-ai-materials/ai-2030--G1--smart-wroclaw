@@ -15,9 +15,8 @@ from api.contexts_boundaries.auth_bc.dependencies import authenticate, optional_
 from api.contexts_boundaries.auth_bc.models import User
 from api.contexts_boundaries.chat_bc import ChatConversation, ChatMessage, ChatRole
 from api.contexts_boundaries.chat_bc.schemas import ChatTurnRequest, ChatTurnResponse
-from api.inngest_app import EVENT_EVENT_GEOCODE, inngest_client
+from api.inngest_app import EVENT_CHAT_TURN, inngest_client
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.encoders import jsonable_encoder
 
 chat_router = APIRouter(prefix="/chat", tags=["chat"])
 
@@ -52,65 +51,45 @@ async def chat_turn(
         repo.attach_user(conversation.id, user_id)
 
     messages = repo.list_messages(conversation.id, limit=_HISTORY_LIMIT)
-    # Memory = the conversation so far (before this turn), each assistant turn
-    # carrying its intent so the router can continue a flow in progress.
-    history = [{"role": m.role.value, "content": m.content, "intent": m.data.get("intent")} for m in messages]
     prior_draft = _prior_draft(messages)
 
+    # Persist the resident's message, then a PENDING assistant message the worker
+    # will fill, plus the run that fills it.
     repo.add_message(
         conversation.id,
         ChatRole.USER,
         body.text,
         data={"fields": body.fields, "action": body.action} if (body.fields or body.action) else None,
     )
+    pending = repo.add_message(conversation.id, ChatRole.ASSISTANT, "", data={"status": "pending"})
+    run = bootstrap.agent_runs_repository.create_run(conversation.id)
 
-    result = bootstrap.main_agent.run_turn(
-        body.text,
-        history,
-        fields=body.fields,
-        action=body.action,
-        prior_draft=prior_draft,
-        reporter_id=user_id,
-        reporter_confirmed=bool(current and current.email_confirmed),
-    )
-
-    # An event was just filed — enrich its coordinates in the background (HERE).
-    created = result.get("created")
-    if result.get("geocode") and created is not None:
-        await inngest_client.send(inngest.Event(name=EVENT_EVENT_GEOCODE, data={"event_id": created.id}))
-
-    repo.add_message(
-        conversation.id,
-        ChatRole.ASSISTANT,
-        result.get("reply", ""),
-        data=jsonable_encoder(
-            {
-                "intent": result.get("intent"),
-                "filters": result.get("filters"),
-                "missing_fields": result.get("missing_fields"),
-                # Persist the accumulated draft so the next turn keeps the
-                # inline-form answers (they aren't recoverable from text alone),
-                # plus the interactive state so a reload rehydrates the widgets.
-                "draft": result.get("draft"),
-                "form": result.get("form"),
-                "ready": result.get("ready"),
-                "status": result.get("status"),
-                "created_event_id": created.id if created is not None else None,
-                # Per-turn agent trace (component · data · tokens · model). Stored on
-                # every turn; only ever RETURNED to ADMINs (below + on message reload).
-                "trace": result.get("trace"),
-            }
-        ),
+    # Hand the turn to the worker (durable, streamed over the WS) and return at once.
+    await inngest_client.send(
+        inngest.Event(
+            name=EVENT_CHAT_TURN,
+            data={
+                "conversation_id": conversation.id,
+                "message_id": pending.id,
+                "run_id": run.id,
+                "text": body.text,
+                "fields": body.fields,
+                "action": body.action,
+                "prior_draft": prior_draft,
+                "reporter_id": user_id,
+                "reporter_confirmed": bool(current and current.email_confirmed),
+            },
+        )
     )
     if conversation.title is None and body.text.strip():
         repo.set_title(conversation.id, body.text[:60])
 
-    # `geocode` is an internal signal to this endpoint, not part of the API.
-    result.pop("geocode", None)
-    # The per-turn agent trace is ADMIN-only — strip it for everyone else.
-    if not (current and current.is_admin):
-        result.pop("trace", None)
-    return {"conversation_id": conversation.id, **result}
+    return {
+        "conversation_id": conversation.id,
+        "message_id": pending.id,
+        "run_id": run.id,
+        "status": "pending",
+    }
 
 
 @chat_router.get("/conversations", response_model=list[ChatConversation])

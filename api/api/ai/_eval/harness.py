@@ -88,6 +88,7 @@ def _understanding_from_filters(f: dict) -> Any:
 
     return EventUnderstanding(
         type=EventType(f["type"]) if f.get("type") else None,
+        secondary_types=[EventType(t) for t in f.get("secondary_types", [])],
         category=ReportCategory(f["category"]) if f.get("category") else None,
         district=f.get("district"),
         keywords=f.get("keywords", []),
@@ -106,9 +107,15 @@ def _run_router(agent, row, ctx):
 
 def _run_extractor(agent, row, ctx):
     u = agent.extract(row["text"])
+    # `all_types` is the candidate SET (primary ∪ secondary). Asserting on the union
+    # — not on `type` alone — is robust to the model swapping which reading is primary
+    # (e.g. "powalone drzewo" is equally HAZARD+[ISSUE] or ISSUE+[HAZARD]); what must
+    # hold is that search's type filter covers both, so the stored event is retrieved.
+    all_types = sorted({t.value for t in [u.type, *u.secondary_types] if t})
     return {
         "primary_category": u.category.value if u.category else "OTHER",
         "secondary_categories": [c.value for c in u.secondary_categories],
+        "all_types": all_types,
     }
 
 
@@ -120,8 +127,10 @@ def _run_report(agent, row, ctx):
 
 def _run_analytics(agent, row, ctx):
     u = ctx.extractor.extract(row["question"])
-    hint = u.location_text or u.address or u.district or row["question"]
-    resolved = ctx.geo.resolve(hint)
+    # Only the EXTRACTED place is a geocode hint — never the whole question, or the
+    # geocoder centroids the city and over-scopes to a tiny radius (mirrors geo_work).
+    hint = u.location_text or u.address or u.district
+    resolved = ctx.geo.resolve(hint) if hint else None
     scope = None
     if resolved is not None and not resolved.needs_user_location:
         scope = {"district": resolved.district, "lat": resolved.lat, "lng": resolved.lng, "radius_m": resolved.radius_m}

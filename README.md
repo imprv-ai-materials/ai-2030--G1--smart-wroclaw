@@ -1,23 +1,6 @@
 # Smart Wrocław
 
-A citizen app for the city of **Wrocław** with two capabilities:
-
-1. **Ask about the city** — an AI assistant answers maintenance questions
-   (waste collection, water supply/outages, MPK public transport, road works,
-   street lighting, parks & greenery).
-2. **Report a problem** — citizens report issues they observe. Every report goes
-   through a **human-in-the-loop (HITL)** review: an AI triages it, then a **city
-   specialist approves or rejects** it before any response reaches the citizen.
-
-```
-citizen files report ─▶ AI triage (category · severity · department · draft reply)
-                              │
-                              ▼
-                    specialist review queue ──▶  ✅ APPROVE → PUBLISHED
-                    (edit any field first)  ──▶  ❌ REJECT  → REJECTED
-```
-
-Nothing the AI produces reaches a citizen until a human specialist signs off.
+A citizen app for the city of **Wrocław**.
 
 ## Run it (Dev Container — recommended)
 
@@ -67,15 +50,3 @@ smart_wroclaw/            ← project root: Poetry (pyproject.toml, poetry.lock,
 The architecture mirrors the sibling `imprv-ai-service` / `imprv-api` services:
 bounded contexts, layered repositories/services, a pypika `DBClient`, an API/worker
 split, and Inngest for background jobs.
-
-## Status & next steps
-
-First draft — the end-to-end shape is in place, and the AI agents have offline
-fallbacks so everything runs without an OpenAI key. Known follow-ups:
-
-- Real authentication (Auth0 / municipal SSO) — dev auth is header-based today.
-- Ground the assistant in real municipal data (RAG over the city's open-data
-  portal, GTFS, ticketing) instead of a static prompt briefing.
-- Duplicate detection + routing to real city departments' ticketing systems.
-</content>
-</invoke>

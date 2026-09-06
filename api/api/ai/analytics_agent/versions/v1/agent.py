@@ -66,7 +66,7 @@ class AnalyticsAgent(AbstractAnalyticsAgent):
         filters = to_search_filters(understanding)
         events = self._events.list(
             status=EventStatus.ACTIVE,
-            type_=filters["type_"],
+            types=filters.get("types"),  # a candidate SET, not a single type
             category=filters["category"],
             district=filters["district"],
         )

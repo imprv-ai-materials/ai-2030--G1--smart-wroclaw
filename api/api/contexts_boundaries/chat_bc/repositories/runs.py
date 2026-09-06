@@ -5,6 +5,7 @@ component as it completes, then finalizes the run onto the assistant message it
 produced. The API reads runs back to expose them (ADMIN) and rehydrate the trace.
 """
 
+import json
 from datetime import datetime, timezone
 from typing import Any
 
@@ -18,6 +19,12 @@ from api.contexts_boundaries.chat_bc.repositories.tables.runs import (
 
 def _now() -> datetime:
     return datetime.now(tz=timezone.utc)
+
+
+def _jsonb(value: Any) -> str | None:
+    """Encode a value for a JSONB column. The db layer stores a `str` verbatim, so
+    a bare `"ile"` would fail JSON parsing — pre-encode everything to JSON text."""
+    return None if value is None else json.dumps(value, ensure_ascii=False, default=str)
 
 
 class AgentRunsRepository:
@@ -51,9 +58,9 @@ class AgentRunsRepository:
                 "seq": seq,
                 "component": component,
                 "status": status.value,
-                "input": input,
-                "output": output,
-                "models": models or [],
+                "input": _jsonb(input),
+                "output": _jsonb(output),
+                "models": _jsonb(models or []),
                 "prompt_tokens": prompt_tokens,
                 "completion_tokens": completion_tokens,
                 "finished_at": _now() if status is not RunStatus.RUNNING else None,

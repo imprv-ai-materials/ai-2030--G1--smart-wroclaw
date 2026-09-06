@@ -13,6 +13,7 @@ Locally the Inngest dev server (compose.yaml) points at the worker's
 /api/inngest; the REST role only ever `inngest_client.send(...)`s events.
 """
 
+import asyncio
 import os
 
 import inngest.fast_api
@@ -25,6 +26,7 @@ from api.contexts_boundaries.city_events_bc.router import events_router
 from api.inngest_app import inngest_client
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
+from loguru import logger
 
 # Eagerly build the container so misconfiguration fails fast at boot.
 bootstrap = get_bootstrap()
@@ -90,6 +92,29 @@ if SERVE_REST:
                 await websocket.receive_text()
         except WebSocketDisconnect:
             await manager.disconnect(topic, websocket)
+
+    @app.on_event("startup")
+    async def _start_chat_progress_relay() -> None:
+        """The API side of the bridge: LISTEN on Postgres for the worker's step
+        NOTIFYs and fan each out to the resident's socket (topic = conversation id).
+        The main agent runs on the WORKER, so this is how its progress reaches the UI."""
+
+        async def relay(payload: dict) -> None:
+            conversation_id = payload.get("conversation_id")
+            if conversation_id is not None:
+                await bootstrap.websocket_manager.publish(str(conversation_id), payload)
+
+        async def run_forever() -> None:
+            # Reconnect on any drop — the UI depends on this stream for `done`, so a
+            # transient Postgres blip must not leave the relay dead.
+            while True:
+                try:
+                    await bootstrap.notification_bus.listen(relay)
+                except Exception as exc:
+                    logger.warning("chat progress relay dropped — reconnecting: {}", exc)
+                    await asyncio.sleep(2)
+
+        asyncio.create_task(run_forever())
 
 
 app.add_middleware(

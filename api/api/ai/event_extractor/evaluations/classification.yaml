@@ -14,5 +14,12 @@ assertions:
     kind: set_equals
     field: secondary_categories
     only_when_expected: true
+  # Candidate type SET (primary ∪ secondary_types). Only rows that pin `all_types`
+  # are graded — guards search-ambiguous events (e.g. "powalone drzewo" is ISSUE or
+  # HAZARD) so the type filter covers both and the stored event is still retrieved.
+  - id: candidate_types_match
+    kind: set_equals
+    field: all_types
+    only_when_expected: true
 metrics:
   - accuracy

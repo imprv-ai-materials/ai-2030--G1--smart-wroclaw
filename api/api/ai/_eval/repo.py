@@ -37,6 +37,7 @@ class InMemoryEventsRepository(AbstractEventsRepository):
         self,
         status: EventStatus | None = None,
         type_: EventType | None = None,
+        types: list[EventType] | None = None,
         category: ReportCategory | None = None,
         district: str | None = None,
         severity: Severity | None = None,
@@ -45,7 +46,9 @@ class InMemoryEventsRepository(AbstractEventsRepository):
         out = self._events
         if status is not None:
             out = [e for e in out if e.status == status]
-        if type_ is not None:
+        if types:
+            out = [e for e in out if e.type in types]
+        elif type_ is not None:
             out = [e for e in out if e.type == type_]
         if category is not None:
             out = [e for e in out if e.category == category]

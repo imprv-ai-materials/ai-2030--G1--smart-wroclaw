@@ -5,3 +5,4 @@
 {"id": "vague-city", "text": "gdzieś w mieście", "expected": null, "resolvable": false, "difficulty": "hard", "note": "brak konkretu → brak zasięgu (null)", "split": "dev"}
 {"id": "whole-city-wroclaw", "text": "we Wrocławiu", "expected": null, "resolvable": false, "difficulty": "hard", "note": "miasto to nie dzielnica — brak zawężenia (chat 3)", "split": "dev"}
 {"id": "whole-city-total", "text": "w całym Wrocławiu", "expected": null, "resolvable": false, "difficulty": "hard", "note": "całe miasto → brak scope (chat 3)", "split": "dev"}
+{"id": "not-a-place-question", "text": "Czy gdzieś jest powalone drzewo?", "expected": null, "resolvable": false, "difficulty": "hard", "note": "pełne pytanie to nie lokalizacja — nie geokoduj do centrum miasta (chat)", "split": "dev"}

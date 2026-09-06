@@ -60,8 +60,14 @@ class RunStatus(StrEnum):
 
 
 def _jsonish(value: Any) -> Any:
-    """JSONB columns come back as Python objects; guard the string case."""
-    return json.loads(value) if isinstance(value, str) else value
+    """JSONB columns come back already parsed; a plain string (a JSONB *string*
+    value, e.g. a step's input text) is returned as-is, not re-parsed."""
+    if isinstance(value, str):
+        try:
+            return json.loads(value)
+        except (ValueError, TypeError):
+            return value
+    return value
 
 
 class AgentRunStep(BaseModel):

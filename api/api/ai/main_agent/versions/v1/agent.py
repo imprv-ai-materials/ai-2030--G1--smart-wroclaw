@@ -217,7 +217,9 @@ class MainAgent(AbstractMainAgent):
         shared by search ("events nearby") and analytics ("… in my district"). A
         "near me" scope needs the user's own coordinates (not wired yet), so we
         return None rather than an unbounded radius."""
-        hint = u.location_text or u.address or u.district or text
+        # Only the EXTRACTED location — never the raw query text, or HERE fuzzily
+        # geocodes a whole question to the Wrocław centroid + a radius (→ 0 results).
+        hint = u.location_text or u.address or u.district
         mark = trace.mark()
         resolved = self._geo.resolve(hint) if hint else None
         trace.add("geo_resolver", input=hint, output=(resolved.model_dump() if resolved else None), since=mark)

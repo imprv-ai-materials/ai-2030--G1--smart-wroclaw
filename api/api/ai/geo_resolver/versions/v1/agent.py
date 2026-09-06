@@ -82,6 +82,12 @@ def _matches_district(district_fold: str, folded_input: str, folded_tokens: list
     return any(_common_prefix(token, district_fold) >= threshold for token in folded_tokens)
 
 
+def _looks_like_place(text: str) -> bool:
+    """A short, statement-like phrase worth sending to HERE — never a whole question,
+    which HERE would fuzzily match to the city centroid + a radius (→ over-narrowed)."""
+    return "?" not in text and 0 < len(text.split()) <= 6
+
+
 class GeoResolver(AbstractGeoResolver):
     def __init__(
         self,
@@ -110,7 +116,7 @@ class GeoResolver(AbstractGeoResolver):
         if any(term in low for term in _WHOLE_CITY):
             return None
 
-        if self._geocoder is not None and self._geocoder.is_configured:
+        if self._geocoder is not None and self._geocoder.is_configured and _looks_like_place(q):
             result = self._geocoder.geocode(q)
             if result is not None:
                 return GeoScope(

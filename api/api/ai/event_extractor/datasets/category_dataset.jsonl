@@ -78,3 +78,4 @@
 {"id": "oth-008", "text": "Publiczny szalet miejski na rynku jest nieczynny od dawna.", "primary_category": "OTHER", "secondary_categories": [], "difficulty": "medium", "note": "", "split": "dev"}
 {"id": "oth-009", "text": "Gniazdo szerszeni tuż przy placu zabaw, dzieci się boją.", "primary_category": "OTHER", "secondary_categories": ["GREENERY"], "difficulty": "hard", "note": "", "split": "test"}
 {"id": "oth-010", "text": "Nie działa tablica miejskiego systemu rowerowego, nie wypożyczę roweru.", "primary_category": "OTHER", "secondary_categories": ["PUBLIC_TRANSPORT"], "difficulty": "hard", "note": "", "split": "dev"}
+{"id": "type-fallen-tree", "text": "Czy gdzieś jest powalone drzewo?", "primary_category": "GREENERY", "secondary_categories": [], "all_types": ["HAZARD", "ISSUE"], "difficulty": "hard", "note": "multi-type: search must match ISSUE-or-HAZARD (chat: powalone drzewo)", "split": "test"}

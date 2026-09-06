@@ -27,6 +27,7 @@ class AbstractEventsRepository(abc.ABC):
         self,
         status: EventStatus | None = None,
         type_: EventType | None = None,
+        types: list[EventType] | None = None,
         category: ReportCategory | None = None,
         district: str | None = None,
         severity: Severity | None = None,
@@ -59,6 +60,7 @@ class EventsRepository(AbstractEventsRepository):
         self,
         status: EventStatus | None = None,
         type_: EventType | None = None,
+        types: list[EventType] | None = None,
         category: ReportCategory | None = None,
         district: str | None = None,
         severity: Severity | None = None,
@@ -67,7 +69,11 @@ class EventsRepository(AbstractEventsRepository):
         criteria: dict[str, Any] = {}
         if status is not None:
             criteria["status"] = status.value
-        if type_ is not None:
+        # A candidate SET of types (the extractor's primary + secondary reads) so a
+        # search for "powalone drzewo" (read as HAZARD) still matches an ISSUE event.
+        if types:
+            criteria["type__in"] = [t.value for t in types]
+        elif type_ is not None:
             criteria["type"] = type_.value
         if category is not None:
             criteria["category"] = category.value

@@ -1,34 +1,18 @@
-"""Durable / observable chat driver — runs one full turn in a retried Inngest step.
+"""Durable chat driver — the main agent, run as an Inngest function on the worker.
 
-The synchronous path is `bootstrap.main_agent.run_turn(...)` (the composed main
-agent). This background variant, triggered by `smart_wroclaw/chat.turn`, wraps the
-same call in `ctx.step.run` so it is retried / memoized / traced. The per-element
-breakdown now lives inside the main agent's sub-agents; hand the agent a step runner
-if you later want each element (guard / extract / route / lane) traced separately.
+Triggered by `smart_wroclaw/chat.turn` (published by POST /chat/turn). The turn's
+components run as `ctx.step.run` steps — guardrails → extract → route → geo → lane —
+so each is a real, retriable, traced Inngest step. Each step also writes an
+`agent_run_steps` row and fires a NOTIFY the API relays to the resident's WebSocket.
+The orchestration lives in `services/durable_turn.py` (shared with a sync test driver).
 """
 
-from datetime import date, datetime
-from enum import Enum
-from typing import Any
+from typing import Any, Callable
 
 import inngest
 from api.bootstrap import get_bootstrap
+from api.contexts_boundaries.chat_bc.services.durable_turn import run_turn_durable
 from api.inngest_app import EVENT_CHAT_TURN, inngest_client
-from pydantic import BaseModel
-
-
-def _jsonify(value: Any) -> Any:
-    if isinstance(value, BaseModel):
-        return value.model_dump(mode="json")
-    if isinstance(value, Enum):
-        return value.value
-    if isinstance(value, (datetime, date)):
-        return value.isoformat()
-    if isinstance(value, dict):
-        return {k: _jsonify(v) for k, v in value.items()}
-    if isinstance(value, list):
-        return [_jsonify(v) for v in value]
-    return value
 
 
 @inngest_client.create_function(
@@ -37,9 +21,13 @@ def _jsonify(value: Any) -> Any:
     retries=1,
 )
 async def chat_turn(ctx: inngest.Context) -> dict[str, Any]:
-    text = str(ctx.event.data.get("text", ""))
-    bootstrap = get_bootstrap()
-    return await ctx.step.run("main-agent-turn", lambda: _jsonify(bootstrap.main_agent.run_turn(text)))
+    async def step(step_id: str, fn: Callable[[], Any]) -> Any:
+        return await ctx.step.run(step_id, fn)
+
+    result = await run_turn_durable(get_bootstrap(), ctx.event.data, step)
+    # The full result is streamed to the UI over the WebSocket; the function's own
+    # return is just a compact summary for the Inngest Runs panel.
+    return {"status": result.get("status"), "intent": result.get("intent")}
 
 
 CHAT_INNGEST_FUNCTIONS = [chat_turn]

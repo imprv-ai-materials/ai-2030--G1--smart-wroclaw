@@ -36,6 +36,9 @@ class EventUnderstanding(BaseModel):
 
     # what
     type: EventType | None = None
+    # Candidate secondary types for SEARCH — "powalone drzewo" reads as HAZARD but
+    # may be filed as ISSUE, so search matches the whole set (see to_search_filters).
+    secondary_types: list[EventType] = Field(default_factory=list)
     category: ReportCategory | None = None
     secondary_categories: list[ReportCategory] = Field(default_factory=list)
     subtype: str | None = None
@@ -89,20 +92,33 @@ def _district_facet(district: str | None) -> str | None:
     return None if any(city in folded for city in _CITY_WIDE) else district
 
 
+def _dedupe_types(types: list[EventType | None]) -> list[EventType]:
+    seen: set[EventType] = set()
+    out: list[EventType] = []
+    for t in types:
+        if t is not None and t not in seen:
+            seen.add(t)
+            out.append(t)
+    return out
+
+
 def to_search_filters(u: EventUnderstanding) -> dict[str, Any]:
-    """Project onto `EventsService.list_events` kwargs (the search tool input).
+    """Project onto the search tool input.
 
     OTHER is treated as "unspecified" for filtering — the extractor uses it as a
     catch-all (and the eval scores it), but it must not over-constrain a search.
     """
     category = u.category if u.category is not None and u.category != ReportCategory.OTHER else None
     district = _district_facet(u.district)  # never let "Wrocław" become a filter
+    # A candidate SET of types (primary + secondary reads), so search matches an event
+    # filed under a related-but-different type. `type_` (the primary) stays for the map.
+    types = _dedupe_types([u.type, *u.secondary_types])
     # Free-text `q` is a substring match, so it only helps when there's nothing
     # structured to filter on — otherwise it double-counts (e.g. "awarie Krzyki"
     # over ISSUE+Krzyki) and zeroes out the results. Structured wins; else q.
-    has_structure = u.type is not None or category is not None or district is not None
+    has_structure = bool(types) or category is not None or district is not None
     q = None if has_structure else (" ".join(u.keywords).strip() or (u.summary or "").strip() or None)
-    return {"type_": u.type, "category": category, "district": district, "q": q}
+    return {"type_": u.type, "types": types or None, "category": category, "district": district, "q": q}
 
 
 def to_event_draft(u: EventUnderstanding) -> dict[str, Any]:

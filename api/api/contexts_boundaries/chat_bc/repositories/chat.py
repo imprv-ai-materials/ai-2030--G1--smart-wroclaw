@@ -69,6 +69,15 @@ class ChatRepository:
         )
         return ChatMessage.from_dict(row)
 
+    def update_message(self, message_id: int, content: str, data: dict[str, Any] | None = None) -> None:
+        """Fill a previously-created (pending) assistant message once the durable
+        turn finishes — content + its structured payload."""
+        self._db.update_one(
+            chat_messages_table,
+            {"id": message_id},
+            {"content": content, "data": data or {}},
+        )
+
     def list_messages(self, conversation_id: int, limit: int = 50) -> list[ChatMessage]:
         rows = self._db.get_many(
             chat_messages_table,

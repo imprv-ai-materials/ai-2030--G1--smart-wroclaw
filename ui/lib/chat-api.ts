@@ -10,7 +10,31 @@ import type { CityEvent } from "@/lib/events-api";
 
 export type ChatIntent = "search" | "report" | "analytics";
 
-export type ChatTurnStatus = "ok" | "blocked" | "login_required" | "email_unconfirmed";
+export type ChatTurnStatus = "pending" | "ok" | "blocked" | "login_required" | "email_unconfirmed";
+
+// Live progress pushed over the WebSocket while the worker runs the turn. A `step`
+// per component, then a `done` once the assistant message is finalized.
+export type ChatProgress =
+  | {
+      type: "step";
+      conversation_id: number;
+      message_id: number;
+      run_id: number;
+      seq: number;
+      component: string;
+      output?: string | null;
+      models?: string[];
+      prompt_tokens?: number;
+      completion_tokens?: number;
+    }
+  | { type: "done"; conversation_id: number; message_id: number; run_id: number };
+
+/** The chat progress WebSocket for a conversation (the API relays worker NOTIFYs). */
+export function chatSocketUrl(conversationId: number): string {
+  const base = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8101/api/v1";
+  const root = base.replace(/\/api\/v1\/?$/, ""); // the WS lives at the root, not under /api/v1
+  return `${root.replace(/^http/, "ws")}/ws/${conversationId}`;
+}
 
 // Per-turn agent trace (ADMIN-only) — which component ran, with what data, at what
 // token cost and on which model. The API only sends this to ADMIN accounts.
@@ -51,8 +75,11 @@ export type ChatFormField = {
 
 export type ChatTurnResult = {
   conversation_id: number;
+  // The turn is async now: POST returns these immediately; the reply streams over WS.
+  message_id?: number;
+  run_id?: number;
   status: ChatTurnStatus;
-  reply: string;
+  reply?: string;
   reason?: string | null;
   intent?: ChatIntent | null;
   filters?: ChatTurnFilters | null;

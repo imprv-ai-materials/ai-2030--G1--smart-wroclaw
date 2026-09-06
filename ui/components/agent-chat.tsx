@@ -18,8 +18,8 @@ import { EventCard } from "@/components/event-card";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { APIError } from "@/lib/api-client";
-import { chatApi } from "@/lib/chat-api";
-import type { ChatFormField, ChatTrace, ChatTurnInput, ChatTurnStatus } from "@/lib/chat-api";
+import { chatApi, chatSocketUrl } from "@/lib/chat-api";
+import type { ChatFormField, ChatProgress, ChatTrace, ChatTurnInput, ChatTurnStatus } from "@/lib/chat-api";
 import type {
   CityEvent,
   EventFilters,
@@ -38,6 +38,11 @@ type ChatMsg = {
   status?: ChatTurnStatus;
   // Per-turn agent trace — present only for ADMIN accounts (the API gates it).
   trace?: ChatTrace;
+  // The server message id (to match live WS progress) + a "still thinking" flag +
+  // the streamed component names.
+  messageId?: number;
+  pending?: boolean;
+  liveSteps?: string[];
 };
 
 function readChatId(): number | null {
@@ -45,6 +50,28 @@ function readChatId(): number | null {
   const raw = new URLSearchParams(window.location.search).get("chat");
   const id = raw ? Number(raw) : NaN;
   return Number.isFinite(id) && id > 0 ? id : null;
+}
+
+type ServerMessage = { id: number; role: "USER" | "ASSISTANT"; content: string; data?: Record<string, unknown> };
+
+/** A persisted message → the chat's view model (assistant payload lives in `data`). */
+function toChatMsg(m: ServerMessage): ChatMsg {
+  if (m.role === "USER") return { role: "user", content: m.content, messageId: m.id };
+  const data = m.data ?? {};
+  return {
+    role: "assistant",
+    content: m.content,
+    messageId: m.id,
+    pending: data.status === "pending" && !m.content,
+    results:
+      (data.results as CityEvent[] | undefined) ??
+      (data.created ? [data.created as CityEvent] : (data.duplicates as CityEvent[] | undefined)) ??
+      undefined,
+    form: (data.form as ChatFormField[] | undefined) ?? undefined,
+    ready: (data.ready as boolean | undefined) ?? undefined,
+    status: (data.status as ChatTurnStatus | undefined) ?? undefined,
+    trace: (data.trace as ChatTrace | undefined) ?? undefined,
+  };
 }
 
 export function AgentChat({
@@ -81,29 +108,57 @@ export function AgentChat({
     chatApi
       .getMessages(id)
       .then((msgs) => {
-        if (cancelled) return;
-        setMessages(
-          msgs.map((m) => {
-            if (m.role === "USER") {
-              return { role: "user" as const, content: m.content };
-            }
-            const data = m.data ?? {};
-            return {
-              role: "assistant" as const,
-              content: m.content,
-              form: (data.form as ChatFormField[] | undefined) ?? undefined,
-              ready: (data.ready as boolean | undefined) ?? undefined,
-              status: (data.status as ChatTurnStatus | undefined) ?? undefined,
-              trace: (data.trace as ChatTrace | undefined) ?? undefined,
-            };
-          }),
-        );
+        if (!cancelled) setMessages(msgs.map(toChatMsg));
       })
       .catch(() => {});
     return () => {
       cancelled = true;
     };
   }, []);
+
+  // Live progress over the WebSocket: the worker streams a `step` per component,
+  // then `done` when the assistant message is finalized (we refetch server truth).
+  const onSearchRef = useRef(onSearch);
+  onSearchRef.current = onSearch;
+  useEffect(() => {
+    if (conversationId == null) return;
+    const ws = new WebSocket(chatSocketUrl(conversationId));
+    ws.onmessage = (ev) => {
+      let msg: ChatProgress;
+      try {
+        msg = JSON.parse(ev.data as string) as ChatProgress;
+      } catch {
+        return;
+      }
+      if (msg.type === "step") {
+        setMessages((ms) =>
+          ms.map((m) =>
+            m.messageId === msg.message_id ? { ...m, liveSteps: [...(m.liveSteps ?? []), msg.component] } : m,
+          ),
+        );
+      } else if (msg.type === "done") {
+        chatApi
+          .getMessages(conversationId)
+          .then((all) => {
+            setMessages(all.map(toChatMsg));
+            const fin = all.find((mm) => mm.id === msg.message_id);
+            const data = (fin?.data ?? {}) as Record<string, unknown>;
+            if (data.intent === "search" && data.filters && onSearchRef.current) {
+              const f = data.filters as Record<string, unknown>;
+              onSearchRef.current({
+                type: (f.type_ as EventType) ?? undefined,
+                category: (f.category as ReportCategory) ?? undefined,
+                district: (f.district as string) ?? undefined,
+                q: (f.q as string) ?? undefined,
+              });
+            }
+          })
+          .catch(() => {});
+        setPending(false);
+      }
+    };
+    return () => ws.close();
+  }, [conversationId]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -113,7 +168,13 @@ export function AgentChat({
   // confirm click. `displayText` is what the resident's bubble shows.
   async function sendTurn(input: ChatTurnInput & { displayText: string }) {
     if (pending) return;
-    setMessages((m) => [...m, { role: "user", content: input.displayText }]);
+    // Optimistically show the resident's message + a pending assistant bubble the
+    // WebSocket fills as the worker streams progress; `pending` clears on `done`.
+    setMessages((m) => [
+      ...m,
+      { role: "user", content: input.displayText },
+      { role: "assistant", content: "", pending: true, liveSteps: [] },
+    ]);
     setPending(true);
     try {
       const res = await chatApi.turn({
@@ -128,34 +189,13 @@ export function AgentChat({
         url.searchParams.set("chat", String(res.conversation_id));
         window.history.replaceState(null, "", url);
       }
-      setMessages((m) => [
-        ...m,
-        {
-          role: "assistant",
-          content: res.reply,
-          // Search results, add-time duplicate candidates, and a freshly-filed
-          // event all render as the same clickable event cards.
-          results:
-            res.results ??
-            (res.created ? [res.created] : res.duplicates) ??
-            undefined,
-          form: res.form ?? undefined,
-          ready: res.ready ?? undefined,
-          status: res.status,
-          trace: res.trace ?? undefined,
-        },
-      ]);
-      if (res.intent === "search" && res.filters && onSearch) {
-        onSearch({
-          type: (res.filters.type_ as EventType) ?? undefined,
-          category: (res.filters.category as ReportCategory) ?? undefined,
-          district: res.filters.district ?? undefined,
-          q: res.filters.q ?? undefined,
-        });
-      }
+      // Tag the pending bubble with its server id so incoming WS steps match it.
+      setMessages((m) =>
+        m.map((mm) => (mm.pending && mm.messageId == null ? { ...mm, messageId: res.message_id ?? undefined } : mm)),
+      );
     } catch (err) {
       toast.error(err instanceof APIError ? err.message : "Coś poszło nie tak.");
-    } finally {
+      setMessages((m) => m.filter((mm) => !mm.pending));
       setPending(false);
     }
   }
@@ -199,12 +239,6 @@ export function AgentChat({
                 onConfirm={handleConfirm}
               />
             ))}
-            {pending ? (
-              <div className="flex items-center gap-2 self-start rounded-2xl bg-muted px-4 py-2.5 text-sm text-muted-foreground">
-                <Loader2 className="size-4 animate-spin" />
-                Myślę…
-              </div>
-            ) : null}
             <div ref={bottomRef} />
           </div>
         )}
@@ -278,7 +312,13 @@ function ChatBubble({
             : "bg-muted text-foreground",
         )}
       >
-        {isUser ? message.content : <MarkdownMessage content={message.content} />}
+        {isUser ? (
+          message.content
+        ) : message.pending ? (
+          <PendingProgress steps={message.liveSteps ?? []} />
+        ) : (
+          <MarkdownMessage content={message.content} />
+        )}
       </div>
 
       {message.results && message.results.length > 0 ? (
@@ -340,6 +380,10 @@ function ChatBubble({
   );
 }
 
+function asText(value: unknown): string {
+  return typeof value === "string" ? value : JSON.stringify(value);
+}
+
 function AgentTrace({ trace }: { trace: ChatTrace }) {
   return (
     <details className="w-full max-w-[90%] self-start text-xs text-muted-foreground">
@@ -358,16 +402,16 @@ function AgentTrace({ trace }: { trace: ChatTrace }) {
                 {step.completion_tokens} tok
               </span>
             </div>
-            {step.input ? (
+            {step.input != null ? (
               <div className="break-all font-mono">
                 <span className="opacity-60">in </span>
-                {step.input}
+                {asText(step.input)}
               </div>
             ) : null}
-            {step.output ? (
+            {step.output != null ? (
               <div className="break-all font-mono">
                 <span className="opacity-60">out </span>
-                {step.output}
+                {asText(step.output)}
               </div>
             ) : null}
           </div>
@@ -377,5 +421,26 @@ function AgentTrace({ trace }: { trace: ChatTrace }) {
         </div>
       </div>
     </details>
+  );
+}
+
+// Live "still thinking" indicator — the current pipeline stage, streamed over the WS.
+function PendingProgress({ steps }: { steps: string[] }) {
+  const LABELS: Record<string, string> = {
+    guardrails_agent: "Sprawdzam temat",
+    event_extractor: "Rozumiem wiadomość",
+    router_agent: "Wybieram działanie",
+    geo_resolver: "Ustalam lokalizację",
+    search_agent: "Szukam zdarzeń",
+    analytics_agent: "Liczę",
+    report_agent: "Przygotowuję zgłoszenie",
+    "events_service.create": "Zapisuję zgłoszenie",
+  };
+  const last = steps[steps.length - 1];
+  return (
+    <span className="inline-flex items-center gap-2 text-muted-foreground">
+      <Loader2 className="size-4 animate-spin" />
+      {last ? `${LABELS[last] ?? last}…` : "Myślę…"}
+    </span>
   );
 }

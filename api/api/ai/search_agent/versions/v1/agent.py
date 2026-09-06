@@ -60,7 +60,7 @@ class SearchAgent(AbstractSearchAgent):
         district = filters["district"] or (scope or {}).get("district")
         events = self._events.list(
             status=status,
-            type_=filters["type_"],
+            types=filters.get("types"),  # a candidate SET, not a single type
             category=filters["category"],
             district=district,
         )

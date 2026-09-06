@@ -74,6 +74,17 @@ def collect() -> dict[str, Any]:
     }
 
 
+def usage() -> dict[str, Any]:
+    """Sum the RAW model calls recorded since `begin()` — for callers (the durable
+    driver) that attribute usage per component themselves rather than via `add()`."""
+    calls = _LLM.get() or []
+    return {
+        "prompt_tokens": sum(c["prompt_tokens"] for c in calls),
+        "completion_tokens": sum(c["completion_tokens"] for c in calls),
+        "models": sorted({c["model"] for c in calls}),
+    }
+
+
 def _short(value: Any, limit: int = 320) -> Any:
     if value is None:
         return None

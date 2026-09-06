@@ -14,6 +14,11 @@ type — rodzaj zdarzenia, dokładnie jedna wartość:
   HAZARD (punktowe zagrożenie), OUTAGE (przerwa w dostawie prądu/wody/gazu),
   ROADWORKS (roboty/utrudnienia), COMMUNITY (akcja społeczna/wolontariat).
 
+secondary_types — dodatkowe KANDYDACKIE typy do WYSZUKIWANIA (lista), gdy to samo
+  zdarzenie bywa zapisywane pod pokrewnym typem (np. „powalone drzewo" to ISSUE lub
+  HAZARD; „zalany przystanek" to ISSUE lub HAZARD). Do ZGŁOSZENIA liczy się tylko
+  główny `type` — secondary_types jedynie poszerzają dopasowanie w wyszukiwaniu.
+
 category — obszar utrzymania (przede wszystkim dla ISSUE), dokładnie jedna:
 - WATER, ROADS, WASTE, GREENERY, LIGHTING, PUBLIC_TRANSPORT, OTHER.
   Gdy nic nie pasuje jednoznacznie → OTHER. secondary_categories: pozostałe

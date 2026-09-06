@@ -1,4 +1,32 @@
 erDiagram
+    agent_run_steps {
+        integer completion_tokens 
+        text component 
+        timestamp_with_time_zone created_at 
+        timestamp_with_time_zone finished_at 
+        bigint id PK 
+        jsonb input 
+        jsonb models 
+        jsonb output 
+        integer prompt_tokens 
+        bigint run_id FK 
+        integer seq 
+        text status 
+    }
+
+    agent_runs {
+        integer completion_tokens 
+        bigint conversation_id FK 
+        timestamp_with_time_zone created_at 
+        text error 
+        timestamp_with_time_zone finished_at 
+        bigint id PK 
+        text intent 
+        bigint message_id FK 
+        integer prompt_tokens 
+        text status 
+    }
+
     alembic_version {
         character_varying version_num PK 
     }
@@ -66,9 +94,13 @@ erDiagram
         bigint id PK 
         text password_hash 
         text phone 
+        text role 
         timestamp_with_time_zone updated_at 
     }
 
+    agent_run_steps }o--|| agent_runs : "run_id"
+    agent_runs }o--|| chat_conversations : "conversation_id"
+    agent_runs }o--|| chat_messages : "message_id"
     auth_tokens }o--|| users : "user_id"
     chat_conversations }o--|| users : "user_id"
     chat_messages }o--|| chat_conversations : "conversation_id"

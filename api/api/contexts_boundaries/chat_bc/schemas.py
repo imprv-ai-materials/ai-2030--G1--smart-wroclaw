@@ -16,7 +16,11 @@ class ChatTurnRequest(BaseModel):
 class ChatTurnResponse(BaseModel):
     conversation_id: int
     status: str
-    reply: str
+    # The turn is now async: POST enqueues and returns immediately with the pending
+    # assistant message + run ids; the reply + results stream over the WebSocket.
+    message_id: int | None = None
+    run_id: int | None = None
+    reply: str = ""
     reason: str | None = None
     intent: str | None = None
     filters: dict[str, Any] | None = None
