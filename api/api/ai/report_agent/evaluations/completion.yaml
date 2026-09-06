@@ -1,0 +1,15 @@
+# Evaluation: the ingestion turn asks for the right missing fields and knows when a
+# draft is complete. Runs extract(text) → plan_turn(prior_draft, fields) and compares
+# the outcome to the gold. Deterministic (no LLM).
+name: completion
+description: Missing-field detection + ready flag over multi-turn report drafts.
+dataset: report
+assertions:
+  - id: missing_fields_match
+    kind: set_equals
+    field: expected_missing
+  - id: ready_match
+    kind: field_equals
+    field: expected_ready
+metrics:
+  - accuracy

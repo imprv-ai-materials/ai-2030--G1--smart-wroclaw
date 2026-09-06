@@ -1,0 +1,12 @@
+# Evaluation: the router assigns the correct task lane to a message.
+# Scores the offline heuristic directly (no LLM); with a key set, the same dataset
+# scores the model's structured decision.
+name: routing
+description: Intent accuracy over labelled resident messages.
+dataset: router
+assertions:
+  - id: intent_match
+    kind: field_equals
+    field: intent
+metrics:
+  - accuracy

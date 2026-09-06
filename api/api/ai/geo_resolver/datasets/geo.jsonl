@@ -1,0 +1,5 @@
+{"id": "district-krzyki", "text": "na Krzykach", "expected": {"district": "Krzyki", "needs_user_location": false, "radius_m": null}, "difficulty": "easy", "note": "", "split": "dev"}
+{"id": "neighbourhood", "text": "w mojej okolicy", "expected": {"district": null, "needs_user_location": true, "radius_m": 1500}, "difficulty": "hard", "note": "potrzebna lokalizacja użytkownika (profil / geolokalizacja)", "split": "dev"}
+{"id": "district-srodmiescie", "text": "w Śródmieściu", "expected": {"district": "Śródmieście", "needs_user_location": false, "radius_m": null}, "difficulty": "easy", "note": "fold diakrytyków: 'srodmiesciu' → Śródmieście", "split": "test"}
+{"id": "address-legnicka", "text": "ul. Legnicka 58", "expected": {"district": null, "needs_user_location": false, "radius_m": 1500}, "difficulty": "medium", "note": "adres → punkt + promień przez HERE (lat/lng zależne od geokodera)", "split": "dev"}
+{"id": "vague-city", "text": "gdzieś w mieście", "expected": null, "difficulty": "hard", "note": "brak konkretu → brak zasięgu (null)", "split": "dev"}

@@ -73,59 +73,7 @@ services:
     depends_on:
       - app
 
-  # Local-only data-labelling UI for the eval workflow (eval/event_extractor/).
-  # Paste eval/.../data/label_studio_config.xml as the project config and import
-  # label_studio_import.json; export the annotations back as JSON for
-  # label_studio_to_goldens.py. Data persists in the label_studio_data volume.
-  label-studio:
-    image: heartexlabs/label-studio:latest
-    restart: unless-stopped
-    environment:
-      # Bootstrap a superuser so there's no signup wall, and silence the
-      # outbound telemetry / "new version" pings — this instance is local only.
-      LABEL_STUDIO_USERNAME: admin@smart-wroclaw.local
-      LABEL_STUDIO_PASSWORD: labelstudio
-      COLLECT_ANALYTICS: "false"
-      LATEST_VERSION_CHECK: "false"
-      # Let Label Studio read the eval datasets bind-mounted below. The document
-      # root is the ONLY host path it will serve, so it's scoped to eval/ alone.
-      LABEL_STUDIO_LOCAL_FILES_SERVING_ENABLED: "true"
-      LABEL_STUDIO_LOCAL_FILES_DOCUMENT_ROOT: /label-studio/files
-      # Fixed local API token so the init sidecar below can authenticate
-      # deterministically. Legacy tokens must be enabled for it to be accepted.
-      LABEL_STUDIO_USER_TOKEN: &ls_token "smartwroclawlocaltoken0123456789"
-      LABEL_STUDIO_ENABLE_LEGACY_API_TOKEN: "true"
-    volumes:
-      - label_studio_data:/label-studio/data
-      # Every eval dataset (eval/*/data/) shows up inside the container here, so
-      # any current OR future agent's data lands in Label Studio automatically —
-      # add a Local Storage in the UI pointed at /label-studio/files/<agent>/data
-      # to sync tasks, or just Import that folder's label_studio_import.json.
-      # Read-only keeps the gold data immutable (never edit eval/** — see README).
-      # ../eval because this compose file lives in .devcontainer/, not the root.
-      - ../eval:/label-studio/files:ro
-
-  # One-shot: waits for label-studio, then PRELOADS every eval dataset that ships
-  # a label_studio_config.xml + label_studio_import.json as its own project
-  # ("eval:<agent>"), importing the pre-annotated tasks. Idempotent — creates a
-  # project only if missing and imports only if empty — so it re-runs harmlessly
-  # on every `up`. Reuses the label-studio image purely for its Python (stdlib
-  # only, no extra pull), and reads the datasets from the same eval/ tree.
-  label-studio-init:
-    image: heartexlabs/label-studio:latest
-    restart: "no"
-    depends_on:
-      - label-studio
-    entrypoint: ["python3", "/eval/label_studio_bootstrap.py"]
-    environment:
-      LS_URL: http://label-studio:8080
-      LS_TOKEN: *ls_token
-      EVAL_ROOT: /eval
-    volumes:
-      - ../eval:/eval:ro
-
 volumes:
   venv:
   ui-node-modules:
   db_data:
-  label_studio_data:

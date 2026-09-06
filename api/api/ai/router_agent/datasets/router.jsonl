@@ -1,0 +1,9 @@
+{"id": "search-pets-krzyki", "text": "Pokaż zaginione zwierzęta na Krzykach.", "intent": "search", "difficulty": "easy", "note": "", "split": "dev"}
+{"id": "search-water-legnicka", "text": "Czy są jakieś awarie wody na Legnickiej?", "intent": "search", "difficulty": "easy", "note": "", "split": "dev"}
+{"id": "search-implicit", "text": "Nie ma prądu na Nadodrzu, czy to znana przerwa?", "intent": "search", "difficulty": "hard", "note": "brak słowa 'szukaj', ale to pytanie o istniejące zdarzenie", "split": "test"}
+{"id": "report-pothole", "text": "Zgłaszam dziurę w jezdni na ul. Krakowskiej.", "intent": "report", "difficulty": "easy", "note": "", "split": "dev"}
+{"id": "report-missing-dog", "text": "Zaginął mi pies w Parku Południowym, wabi się Fela.", "intent": "report", "difficulty": "medium", "note": "", "split": "dev"}
+{"id": "report-implicit", "text": "Na chodniku przy Traugutta leży powalone drzewo, blokuje przejście.", "intent": "report", "difficulty": "hard", "note": "opis problemu bez słowa 'zgłoś'", "split": "test"}
+{"id": "analytics-count-lights", "text": "Ile latarni nie świeci w Śródmieściu?", "intent": "analytics", "difficulty": "easy", "note": "", "split": "dev"}
+{"id": "analytics-neighbourhood", "text": "Ilu zaginionych psów jest w mojej okolicy?", "intent": "analytics", "difficulty": "medium", "note": "zasięg = okolica użytkownika", "split": "dev"}
+{"id": "analytics-total", "text": "Jak wiele zgłoszeń drogowych mamy łącznie w tym tygodniu?", "intent": "analytics", "difficulty": "hard", "note": "", "split": "test"}

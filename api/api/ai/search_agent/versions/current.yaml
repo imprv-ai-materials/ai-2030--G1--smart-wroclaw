@@ -1,0 +1,6 @@
+# CURRENT — which version of search_agent the app runs.
+# The loader imports `api.ai.search_agent.versions.<version>` and uses its AGENT
+# class. Promote by changing `version`; no code change.
+version: v1
+# search_agent v1 is deterministic (no model); this override is unused for now.
+model: null

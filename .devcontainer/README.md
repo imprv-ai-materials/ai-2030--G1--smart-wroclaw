@@ -1,9 +1,9 @@
 # Dev Container — run Smart Wrocław on any OS
 
 A one-click, reproducible dev environment. Everything the stack needs — Python
-3.12, Poetry, Node 20, pnpm, Postgres, the Inngest dev server and Label Studio —
-is provisioned in containers, so it behaves the same on **macOS, Windows (WSL2)
-and Linux**. No local Python/Node/Postgres install required; only Docker + an
+3.12, Poetry, Node 20, pnpm, Postgres and the Inngest dev server — is provisioned
+in containers, so it behaves the same on **macOS, Windows (WSL2) and Linux**. No
+local Python/Node/Postgres install required; only Docker + an
 editor with Dev Containers support (VS Code + the *Dev Containers* extension, or
 the `devcontainer` CLI).
 
@@ -28,7 +28,6 @@ Open the forwarded ports (VS Code → **Ports** panel):
 | UI (Next.js)    | http://localhost:3100        |                                         |
 | API + docs      | http://localhost:8101/docs   | REST + Inngest function host (role=all) |
 | Inngest         | http://localhost:8288        | dev dashboard                           |
-| Label Studio    | http://localhost:8080        | `admin@smart-wroclaw.local` / `labelstudio` |
 | Postgres        | localhost:5432 (forwarded)   | `smart_wroclaw` / `smart_wroclaw`       |
 
 ## "Can we fire up the compose from the devcontainer?" — yes, it *is* the compose
@@ -43,10 +42,10 @@ compose. The services:
 │  uvicorn :8101      │   run uvicorn (role=all → REST + worker) and pnpm here.
 │  next  :3100        │
 └─────────┬───────────┘
-          │  db:5432          inngest:8288          label-studio:8080
-   ┌──────▼─────┐      ┌──────────▼───────┐   ┌──────────▼────────┐
-   │ postgres:18│      │ inngest dev srv  │   │  label studio     │
-   └────────────┘      │ -u app:8101/...  │   └───────────────────┘
+          │  db:5432          inngest:8288
+   ┌──────▼─────┐      ┌──────────▼───────┐
+   │ postgres:18│      │ inngest dev srv  │
+   └────────────┘      │ -u app:8101/...  │
                        └──────────────────┘
 ```
 
@@ -70,21 +69,17 @@ native `docker compose` / Tilt run.
 > `pnpm` commands above — DB host, Inngest URL and role are already set as
 > container env vars.
 
-## Label Studio (local only)
+## Annotating eval datasets
 
-Runs as the `label-studio` service — always on in the devcontainer, off by
-default on the native host. It's for the eval loop in
-[`eval/event_extractor/`](../eval/event_extractor/README.md): paste
-`data/label_studio_config.xml` as the project config, import
-`label_studio_import.json`, annotate, then export JSON and feed it to
-`label_studio_to_goldens.py`. Data persists in the `label_studio_data` volume;
-telemetry / version checks are disabled.
-
-To run it on the **native host** instead (without the devcontainer):
+Dataset labelling uses the lightweight in-repo annotator at
+[`/.annotator`](../.annotator/README.md) — no extra service. Point it at an
+agent's dataset + template, e.g.:
 
 ```bash
-docker compose --env-file api/.env --profile eval up -d label-studio
-# → http://localhost:8080
+python .annotator/annotate.py \
+  api/api/ai/main_agent/datasets/annotate.template.js \
+  api/api/ai/main_agent/datasets/queries.jsonl
+# → http://127.0.0.1:7900
 ```
 
 ## Notes & gotchas

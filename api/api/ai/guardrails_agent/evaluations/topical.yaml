@@ -1,0 +1,16 @@
+# Evaluation: the gate accepts city-event asks and refuses everything else.
+# Scores the accept/refuse decision directly (offline heuristic, or the model's
+# structured verdict when a key is set) against the labelled `allow` flag.
+name: topical
+description: Accept city-event asks, refuse off-topic — allow-flag accuracy.
+dataset: guardrails
+assertions:
+  - id: allow_match
+    kind: field_equals
+    field: allow
+  - id: reason_match
+    kind: field_equals
+    field: reason
+    only_when_expected: true
+metrics:
+  - accuracy

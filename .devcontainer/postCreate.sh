@@ -64,6 +64,5 @@ Then open the forwarded ports (VS Code → Ports panel):
     UI            http://localhost:3100
     API docs      http://localhost:8101/docs
     Inngest       http://localhost:8288
-    Label Studio  http://localhost:8080   (admin@smart-wroclaw.local / labelstudio)
 
 DONE

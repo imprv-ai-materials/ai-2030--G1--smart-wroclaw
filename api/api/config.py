@@ -37,12 +37,6 @@ class PostgresConfig(BaseModel):
         return f"postgresql+psycopg2://{self.user}:{self.password}@{self.host}:{self.port}/{self.db}"
 
 
-class AssistantConfig(BaseModel):
-    """The chat "answer" agent — general city Q&A inside a conversation."""
-
-    model: str = "gpt-5.4"
-
-
 class AppConfig(BaseModel):
     """App-level auth + public-URL settings.
 
@@ -90,7 +84,6 @@ class HereConfig(BaseModel):
 class Config(BaseSettings):
     postgres: PostgresConfig
     openai: OpenAIConfig = OpenAIConfig()
-    assistant: AssistantConfig = AssistantConfig()
     app: AppConfig = AppConfig()
     resend: ResendConfig = ResendConfig()
     here: HereConfig = HereConfig()

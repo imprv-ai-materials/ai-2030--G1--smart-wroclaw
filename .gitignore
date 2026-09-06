@@ -9,3 +9,9 @@ coverage/
 dist/
 _volumes/
 .deepeval
+
+# Dataset annotator (/.annotator) — backups + atomic-write temp files
+*.jsonl.bak
+*.json.bak
+*.jsonl.tmp
+*.json.tmp

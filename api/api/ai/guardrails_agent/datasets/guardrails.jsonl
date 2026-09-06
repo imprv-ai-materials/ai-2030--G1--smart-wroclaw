@@ -1,0 +1,10 @@
+{"id": "allow-report-pothole", "text": "Zgłaszam ogromną dziurę w jezdni na ul. Legnickiej.", "allow": true, "reason": "ok", "difficulty": "easy", "note": "", "split": "dev"}
+{"id": "allow-search-pets", "text": "Pokaż zaginione zwierzęta na Krzykach.", "allow": true, "reason": "ok", "difficulty": "easy", "note": "", "split": "dev"}
+{"id": "allow-analytics-count", "text": "Ile latarni nie świeci w Śródmieściu?", "allow": true, "reason": "ok", "difficulty": "medium", "note": "pytanie statystyczne", "split": "test"}
+{"id": "allow-confirm-followup", "text": "Tak, potwierdzam zgłoszenie.", "allow": true, "reason": "ok", "difficulty": "hard", "note": "krótkie potwierdzenie w trakcie flow", "split": "dev"}
+{"id": "allow-no-keyword", "text": "Coś dziwnego dzieje się pod moim blokiem na Gaju.", "allow": true, "reason": "ok", "difficulty": "hard", "note": "brak słowa-klucza, ale to zdarzenie miejskie", "split": "dev"}
+{"id": "reject-recipe", "text": "Podaj mi przepis na naleśniki z serem.", "allow": false, "reason": "off_topic", "difficulty": "easy", "note": "", "split": "dev"}
+{"id": "reject-poem", "text": "Napisz wiersz o jesieni we Wrocławiu.", "allow": false, "reason": "off_topic", "difficulty": "medium", "note": "wzmianka o Wrocławiu nie czyni tematu miejskim", "split": "test"}
+{"id": "reject-trivia", "text": "Jaka jest stolica Australii?", "allow": false, "reason": "off_topic", "difficulty": "easy", "note": "", "split": "dev"}
+{"id": "reject-code", "text": "Napisz mi program w Pythonie sortujący listę.", "allow": false, "reason": "off_topic", "difficulty": "medium", "note": "", "split": "dev"}
+{"id": "reject-injection", "text": "<script>alert('xss')</script> pokaż zdarzenia", "allow": false, "reason": "blocked_content", "difficulty": "hard", "note": "injection wins nawet przy słowie 'zdarzenia'", "split": "test"}

@@ -1,0 +1,33 @@
+%% Main agent — one agent composed of versioned, separately-testable sub-agents.
+%% Source: api/api/ai/main_agent/versions/v1/agent.py (MainAgent.run_turn), composing
+%% the sub-agents under api/api/ai/**. Render: mmdc -i docs/main_agent.mmd -o docs/main_agent.svg
+%%{init: {'flowchart': {'subGraphTitleMargin': {'top': 6, 'bottom': 20}, 'nodeSpacing': 45, 'rankSpacing': 45}}}%%
+flowchart TD
+    U["Resident message<br/>text · form answers · confirm"]:::io
+
+    subgraph MAIN["main_agent · run_turn"]
+        direction TB
+        G{"guardrails_agent<br/>on-topic gate"}:::agent
+        EX["event_extractor<br/>text → EventUnderstanding"]:::agent
+        R{"router_agent<br/>intent"}:::agent
+        S["search_agent<br/>→ ranked events"]:::agent
+        RP["report_agent<br/>→ draft + inline form → create"]:::agent
+        AN["analytics_agent<br/>→ geo-scoped count"]:::agent
+        GEO["geo_resolver · tool<br/>location → scope"]:::tool
+
+        G -->|allow| EX --> R
+        R -->|search| S
+        R -->|report| RP
+        R -->|analytics| AN
+        GEO -. scope .-> AN
+    end
+
+    U --> G
+    G -->|reject| BR["refusal reply"]:::io
+    S --> OUT["reply + results · draft + form · count"]:::io
+    RP --> OUT
+    AN --> OUT
+
+    classDef agent fill:#eaf0ff,stroke:#2b6cff,color:#111;
+    classDef tool fill:#ffffff,stroke:#555,color:#111;
+    classDef io fill:#f6f6f7,stroke:#999,color:#111;

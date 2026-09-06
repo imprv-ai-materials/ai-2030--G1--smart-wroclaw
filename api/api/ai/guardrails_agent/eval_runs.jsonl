@@ -1,0 +1,1 @@
+{"ts": "2026-09-06T12:23:56+00:00", "agent": "guardrails_agent", "version": "v1", "dataset": "guardrails", "split": "dev", "sample": 100, "mode": "classification", "metrics": {"accuracy": 0.8571}}

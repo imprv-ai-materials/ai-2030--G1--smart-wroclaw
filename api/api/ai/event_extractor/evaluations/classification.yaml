@@ -4,8 +4,8 @@
 # `eval/category_agent/run_deepeval.py` (adds per-class F1 + bootstrap CIs); this
 # YAML is the in-package convention twin of triage_agent/evaluations.
 name: classification
-description: Primary-category accuracy against category_smoke.
-dataset: category_smoke
+description: Primary-category accuracy over the category dataset (split-aware).
+dataset: category_dataset
 assertions:
   - id: primary_category_match
     kind: field_equals

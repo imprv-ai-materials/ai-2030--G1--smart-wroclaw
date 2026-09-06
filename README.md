@@ -22,9 +22,9 @@ Nothing the AI produces reaches a citizen until a human specialist signs off.
 ## Run it (Dev Container — recommended)
 
 A one-click, reproducible environment. Python 3.12, Poetry, Node 20, pnpm,
-Postgres, the Inngest dev server and Label Studio all come up as a Compose stack —
-identically on **macOS, Windows (WSL2) and Linux**. No local Python/Node/Postgres
-needed, just Docker + an editor with Dev Containers support.
+Postgres and the Inngest dev server all come up as a Compose stack — identically
+on **macOS, Windows (WSL2) and Linux**. No local Python/Node/Postgres needed,
+just Docker + an editor with Dev Containers support.
 
 1. Open this folder in VS Code.
 2. **Reopen in Container** (Command Palette → *Dev Containers: Reopen in
@@ -44,7 +44,6 @@ Open the forwarded ports (VS Code → **Ports**):
 | UI           | http://localhost:3100      |
 | API + docs   | http://localhost:8101/docs |
 | Inngest      | http://localhost:8288      |
-| Label Studio | http://localhost:8080      |
 
 > Inside the container, use the plain `uvicorn` / `pnpm` commands above — **not**
 > `pypyr start_tilt`, which hardcodes host-oriented URLs for the native workflow.
@@ -57,10 +56,11 @@ Full details, gotchas and the native (non-container) workflow:
 ```
 smart_wroclaw/            ← project root: Poetry (pyproject.toml, poetry.lock, .venv)
 ├── api/      FastAPI · pypika · Inngest — backend service (see api/README.md)
+│   └── api/ai/<agent>/   each AI agent: versions/ · datasets/ · eval/ (its own scored loop)
 ├── ui/       Next.js · React · Tailwind v4 · shadcn/ui · TanStack Query (see ui/README.md)
 ├── dev/      pypyr task pipelines that orchestrate the stack (native workflow)
-├── eval/     event-extractor eval loop (Label Studio)
-├── docs/     architecture notes
+├── .annotator/  lightweight in-repo dataset annotator (see .annotator/README.md)
+├── docs/     architecture notes + diagrams
 └── compose.yaml · Tiltfile · Dockerfile   ← infra / runtime
 ```
 

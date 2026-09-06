@@ -1,0 +1,16 @@
+# Evaluation: search is ranking, so it's scored like retrieval (deterministic — no
+# LLM judge). This YAML is the in-package convention twin; the authoritative,
+# larger runnable loop is api/api/ai/main_agent/eval/run_eval.py (38-event corpus,
+# dev/test split, CI gate). This seed lets you probe the ranker in isolation.
+name: retrieval
+description: Ranking quality — relevant events at the top, hard-negs/excludes out.
+dataset: search
+assertions:
+  - id: relevant_ranked_top
+    kind: ranking
+    relevant_field: relevant
+    exclude_field: must_exclude
+metrics:
+  - hit_at_1
+  - mrr
+  - recall_at_k

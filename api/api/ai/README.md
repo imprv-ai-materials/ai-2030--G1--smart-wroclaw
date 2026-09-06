@@ -16,9 +16,11 @@ ai/<agent_name>/
     └── current.yaml   names the ACTIVE version (+ optional model override)
 ```
 
-Agents today: `assistant_agent` (city Q&A), `triage_agent` (report triage) and
-`category_agent` (open-text report → category classification; the focused agent
-driven by the DeepEval loop under `eval/category_agent/`).
+Agents today — the **`main_agent`** composes the rest into one turn:
+`guardrails_agent` (topic gate), `event_extractor` (text → `EventUnderstanding`),
+`router_agent` (intent), `search_agent` (retrieval), `report_agent` (ingestion),
+`analytics_agent` (counting) and the `geo_resolver` tool. Each has its own
+`base.py` contract, `versions/`, `datasets/` and `evaluations/`.
 
 ## How a version is selected
 
@@ -36,8 +38,8 @@ model: null          # optional per-deployment model override
 
 ## Adding / promoting a version
 
-1. `cp -r versions/v1 versions/v2` (or subclass v1 — the `(from v1)` lineage; see
-   `assistant_agent/versions/v2/agent.py`).
+1. `cp -r versions/v1 versions/v2` (or subclass v1 for a `(from v1)` lineage —
+   keep the later version a thin diff over the earlier one).
 2. Edit `versions/v2/prompts.py` (and `agent.py` if behaviour changes). Make sure
    `versions/v2/__init__.py` exposes `AGENT`.
 3. Score it against `datasets/` + `evaluations/`.
@@ -45,10 +47,10 @@ model: null          # optional per-deployment model override
 
 ## Contract vs payload
 
-`base.py` holds the `Abstract<Agent>` the domain depends on. The reference also
-puts an agent's *result payload* models in `base.py`; here `triage_agent`'s result
-(`TriageResult`) is a **domain** model owned by `city_events_bc`, so `base.py`
-imports it rather than redefining it. `assistant_agent` returns a plain `str`.
+`base.py` holds the `Abstract<Agent>` the domain depends on, plus that agent's
+*result payload* model when it has one (e.g. `guardrails_agent`'s `GuardrailVerdict`,
+`report_agent`'s `ReportTurn`). Agents that return an existing domain type import it
+rather than redefine it (e.g. `search_agent` returns `list[CityEvent]`).
 
 ## Build
 

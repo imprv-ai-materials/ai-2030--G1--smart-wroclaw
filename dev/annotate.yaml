@@ -1,0 +1,43 @@
+# `pypyr annotate` — open the in-repo annotator for an agent's dataset.
+#
+#   pypyr annotate agent=guardrails_agent dataset=guardrails
+#   pypyr annotate agent=search_agent dataset=search
+#   pypyr annotate agent=event_extractor dataset=dev port=7901
+#
+# Point it at an agent + one of its datasets/*.jsonl; it uses that agent's
+# datasets/annotate.template.js and serves the labelling UI on
+# http://127.0.0.1:{port}. Edits autosave to the .jsonl in place (one-time .bak).
+# Stdlib only — no extra installs. Ctrl+C to stop.
+context_parser: pypyr.parser.keyvaluepairs
+steps:
+  - pypyr.steps.debug
+  - pypyr.steps.configvars
+
+  - name: pypyr.steps.default
+    description: default values for optional inputs
+    in:
+      defaults:
+        agent: ''
+        dataset: ''
+        port: '7900'
+
+  - name: pypyr.steps.py
+    description: require agent + dataset
+    in:
+      pycode: |
+        if not str(context.get("agent", "")).strip() or not str(context.get("dataset", "")).strip():
+            raise ValueError("needs agent=<name> dataset=<name>")
+
+  - name: pypyr.steps.cmd
+    description: Open the annotator for the agent's dataset
+    in:
+      cmd: >
+        poetry run python .annotator/annotate.py
+        api/api/ai/{agent}/datasets/annotate.template.js
+        api/api/ai/{agent}/datasets/{dataset}.jsonl
+        --port {port}
+
+on_failure:
+  - name: pypyr.steps.echo
+    in:
+      echoMe: "Usage: pypyr annotate agent=<name> dataset=<name> [port=7900]"

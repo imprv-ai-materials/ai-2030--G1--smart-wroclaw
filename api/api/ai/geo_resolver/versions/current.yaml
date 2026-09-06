@@ -1,0 +1,6 @@
+# CURRENT — which version of geo_resolver the app runs.
+# The loader imports `api.ai.geo_resolver.versions.<version>` and uses its AGENT
+# class. Promote by changing `version`; no code change.
+version: v1
+# geo_resolver v1 is deterministic + HERE (no model); this override is unused.
+model: null

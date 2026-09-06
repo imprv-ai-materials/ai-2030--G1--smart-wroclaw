@@ -1,0 +1,17 @@
+# Evaluation: a location mention resolves to the right scope — the correct district,
+# or the "near me" flag, or nothing (null). Deterministic; address→lat/lng accuracy
+# needs a live HERE key and is checked separately.
+name: geocoding
+description: District / near-me / unresolvable scope over location mentions.
+dataset: geo
+assertions:
+  - id: district_match
+    kind: field_equals
+    field: expected.district
+    only_when_expected: true
+  - id: needs_user_location_match
+    kind: field_equals
+    field: expected.needs_user_location
+    only_when_expected: true
+metrics:
+  - accuracy

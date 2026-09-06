@@ -18,9 +18,24 @@ from api.adapters.email import AbstractEmailClient, build_email_client
 from api.adapters.geocoding import HereGeocodingClient
 from api.adapters.llm import OpenAIClient
 from api.adapters.websockets import WebSocketManager
-from api.ai.assistant_agent import AbstractAssistantAgent
+from api.ai import load_current
+from api.ai.analytics_agent import AbstractAnalyticsAgent
 from api.ai.event_extractor import AbstractEventExtractor
-from api.bootstrap.agents import get_assistant_agent, get_event_extractor
+from api.ai.geo_resolver import AbstractGeoResolver
+from api.ai.guardrails_agent import AbstractGuardrailAgent
+from api.ai.main_agent import AbstractMainAgent
+from api.ai.report_agent import AbstractReportAgent
+from api.ai.router_agent import AbstractRouterAgent
+from api.ai.search_agent import AbstractSearchAgent
+from api.bootstrap.agents import (
+    get_analytics_agent,
+    get_event_extractor,
+    get_geo_resolver,
+    get_guardrails_agent,
+    get_report_agent,
+    get_router_agent,
+    get_search_agent,
+)
 from api.config import Config, config
 from api.contexts_boundaries.auth_bc.repositories import AuthTokensRepository, UsersRepository
 from api.contexts_boundaries.auth_bc.services import AuthService
@@ -101,15 +116,50 @@ class Bootstrap:
         )
 
     #
-    # AI AGENTS (shared by the chat orchestrator)
+    # AI AGENTS — the sub-agents the main agent composes
     #
     @cached_property
-    def assistant_agent(self) -> AbstractAssistantAgent:
-        return get_assistant_agent(self.openai_client, self.config)
+    def guardrails_agent(self) -> AbstractGuardrailAgent:
+        return get_guardrails_agent(self.openai_client, self.config)
 
     @cached_property
     def event_extractor(self) -> AbstractEventExtractor:
         return get_event_extractor(self.openai_client, self.config)
+
+    @cached_property
+    def router_agent(self) -> AbstractRouterAgent:
+        return get_router_agent(self.openai_client, self.config)
+
+    @cached_property
+    def search_agent(self) -> AbstractSearchAgent:
+        return get_search_agent(self.events_repository)
+
+    @cached_property
+    def report_agent(self) -> AbstractReportAgent:
+        return get_report_agent(self.events_repository)
+
+    @cached_property
+    def analytics_agent(self) -> AbstractAnalyticsAgent:
+        return get_analytics_agent(self.events_repository, self.openai_client, self.config)
+
+    @cached_property
+    def geo_resolver(self) -> AbstractGeoResolver:
+        return get_geo_resolver(self.here_client)
+
+    @cached_property
+    def main_agent(self) -> AbstractMainAgent:
+        # The one agent the app is — composes the sub-agents above into one turn.
+        current = load_current("main_agent")
+        return current.agent_class(
+            guardrails=self.guardrails_agent,
+            extractor=self.event_extractor,
+            router=self.router_agent,
+            search=self.search_agent,
+            report=self.report_agent,
+            analytics=self.analytics_agent,
+            geo=self.geo_resolver,
+            events_service=self.events_service,
+        )
 
     #
     # CITY EVENTS BC

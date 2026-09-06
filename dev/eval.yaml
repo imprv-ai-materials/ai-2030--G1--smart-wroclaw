@@ -1,0 +1,66 @@
+# `pypyr eval` — run the unified agent evaluator (api/api/ai/evaluate.py).
+#
+#   pypyr eval                                       # list agents + datasets
+#   pypyr eval agent=guardrails_agent                # score CURRENT version, dev split
+#   pypyr eval agent=router_agent version=v2 split=all
+#   pypyr eval agent=event_extractor dataset=category_dataset sample=50 llm=1
+#   pypyr eval agent=search_agent show_errors=1
+#   pypyr eval agent=guardrails_agent history=1      # show recorded runs, don't run
+#
+# Every run appends a line to ai/<agent>/eval_runs.jsonl (disable with no_store=1).
+context_parser: pypyr.parser.keyvaluepairs
+steps:
+  - pypyr.steps.debug
+  - pypyr.steps.configvars
+
+  - name: pypyr.steps.default
+    description: default values for optional inputs
+    in:
+      defaults:
+        agent: ''
+        version: ''
+        dataset: ''
+        split: 'dev'
+        sample: '100'
+        llm: ''
+        show_errors: ''
+        no_store: ''
+        history: ''
+
+  - name: pypyr.steps.py
+    description: assemble the evaluator CLI options from the pypyr vars
+    in:
+      pycode: |
+        def truthy(v):
+            return str(v).strip().lower() in ("1", "true", "yes", "on")
+
+        agent = str(context.get("agent", "")).strip()
+        if not agent:
+            context["eval_opts"] = "--list"
+        elif truthy(context.get("history")):
+            context["eval_opts"] = f"--agent {agent} --history"
+        else:
+            opts = ["--agent", agent, "--split", str(context["split"]), "--sample", str(context["sample"])]
+            version = str(context.get("version", "")).strip()
+            if version and version.lower() not in ("current", "auto", "none"):
+                opts += ["--version", version]
+            dataset = str(context.get("dataset", "")).strip()
+            if dataset and dataset.lower() not in ("default", "none"):
+                opts += ["--dataset", dataset]
+            if truthy(context.get("llm")):
+                opts += ["--llm"]
+            if truthy(context.get("show_errors")):
+                opts += ["--show-errors"]
+            if truthy(context.get("no_store")):
+                opts += ["--no-store"]
+            context["eval_opts"] = " ".join(opts)
+
+  - name: pypyr.steps.cmd
+    description: Run the unified evaluator
+    in:
+      cmd: poetry run python api/api/ai/evaluate.py {eval_opts}
+
+on_failure:
+  - name: pypyr.steps.echo
+    in:
+      echoMe: "Usage: pypyr eval agent=<name> [version=v2] [dataset=D] [split=dev|test|all] [sample=50] [llm=1] [show_errors=1] [history=1]"

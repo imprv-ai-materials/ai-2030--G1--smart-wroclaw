@@ -1,0 +1,19 @@
+# Evaluation: the analytics agent resolves a "how many" question to the right
+# filters + geo scope. The reading is scored here; exact-count accuracy needs a
+# fixed corpus (like the search agent) — add one when the count query lands.
+name: counting
+description: Filters + geo-scope reading for count questions.
+dataset: analytics
+assertions:
+  # The reading that feeds the counter (type + category). Geo scope is scored by
+  # geo_resolver's own eval; exact-count accuracy needs a fixed corpus + gold counts.
+  - id: type_match
+    kind: field_equals
+    field: filters.type
+    only_when_expected: true
+  - id: category_match
+    kind: field_equals
+    field: filters.category
+    only_when_expected: true
+metrics:
+  - accuracy

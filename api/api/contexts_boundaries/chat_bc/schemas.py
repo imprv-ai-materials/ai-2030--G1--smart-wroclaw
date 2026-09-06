@@ -27,3 +27,6 @@ class ChatTurnResponse(BaseModel):
     form: list[dict[str, Any]] | None = None
     ready: bool | None = None
     created: CityEvent | None = None
+    # analytics turn: the count + its per-type breakdown
+    count: int | None = None
+    breakdown: dict[str, int] | None = None

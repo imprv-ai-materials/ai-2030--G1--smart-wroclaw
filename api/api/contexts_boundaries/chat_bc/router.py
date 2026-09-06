@@ -15,7 +15,6 @@ from api.contexts_boundaries.auth_bc.dependencies import authenticate, optional_
 from api.contexts_boundaries.auth_bc.models import User
 from api.contexts_boundaries.chat_bc import ChatConversation, ChatMessage, ChatRole
 from api.contexts_boundaries.chat_bc.schemas import ChatTurnRequest, ChatTurnResponse
-from api.contexts_boundaries.chat_bc.services import run_turn
 from api.inngest_app import EVENT_EVENT_GEOCODE, inngest_client
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.encoders import jsonable_encoder
@@ -45,9 +44,7 @@ async def chat_turn(
     repo = bootstrap.chat_repository
     user_id = current.id if current else None
 
-    conversation = (
-        repo.get_conversation(body.conversation_id) if body.conversation_id else None
-    )
+    conversation = repo.get_conversation(body.conversation_id) if body.conversation_id else None
     if conversation is None:
         conversation = repo.create_conversation(user_id=user_id)
     elif user_id is not None and conversation.user_id is None:
@@ -57,10 +54,7 @@ async def chat_turn(
     messages = repo.list_messages(conversation.id, limit=_HISTORY_LIMIT)
     # Memory = the conversation so far (before this turn), each assistant turn
     # carrying its intent so the router can continue a flow in progress.
-    history = [
-        {"role": m.role.value, "content": m.content, "intent": m.data.get("intent")}
-        for m in messages
-    ]
+    history = [{"role": m.role.value, "content": m.content, "intent": m.data.get("intent")} for m in messages]
     prior_draft = _prior_draft(messages)
 
     repo.add_message(
@@ -70,8 +64,7 @@ async def chat_turn(
         data={"fields": body.fields, "action": body.action} if (body.fields or body.action) else None,
     )
 
-    result = run_turn(
-        bootstrap,
+    result = bootstrap.main_agent.run_turn(
         body.text,
         history,
         fields=body.fields,
@@ -84,9 +77,7 @@ async def chat_turn(
     # An event was just filed — enrich its coordinates in the background (HERE).
     created = result.get("created")
     if result.get("geocode") and created is not None:
-        await inngest_client.send(
-            inngest.Event(name=EVENT_EVENT_GEOCODE, data={"event_id": created.id})
-        )
+        await inngest_client.send(inngest.Event(name=EVENT_EVENT_GEOCODE, data={"event_id": created.id}))
 
     repo.add_message(
         conversation.id,
@@ -125,9 +116,7 @@ def list_conversations(
     return bootstrap.chat_repository.list_conversations(current.id)
 
 
-@chat_router.get(
-    "/conversations/{conversation_id}/messages", response_model=list[ChatMessage]
-)
+@chat_router.get("/conversations/{conversation_id}/messages", response_model=list[ChatMessage])
 def conversation_messages(
     conversation_id: int,
     bootstrap: Bootstrap = Depends(get_bootstrap_dep),
@@ -139,8 +128,6 @@ def conversation_messages(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="rozmowa nie istnieje")
     # Owned conversations are private to their owner; an anonymous conversation is
     # reachable by anyone holding its id (the id is the only key).
-    if conversation.user_id is not None and (
-        current is None or current.id != conversation.user_id
-    ):
+    if conversation.user_id is not None and (current is None or current.id != conversation.user_id):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="brak dostępu do rozmowy")
     return repo.list_messages(conversation_id, limit=200)

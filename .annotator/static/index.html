@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dataset Annotator</title>
+  <link rel="stylesheet" href="/static/app.css" />
+</head>
+<body>
+  <header id="topbar">
+    <button id="toggle-sidebar" class="icon-btn" title="Show / hide case list">☰</button>
+    <div id="dataset-name" class="name-bar">dataset name</div>
+    <div id="save-status" class="save-status">ready</div>
+  </header>
+
+  <!-- per-case bookkeeping (id / difficulty / note) — not part of the pipeline -->
+  <div id="casebar"></div>
+
+  <main id="layout">
+    <aside id="sidebar">
+      <div class="sidebar-head">
+        <span id="case-count">0 cases</span>
+        <button id="add-case" class="pill-btn" title="Add a new case">+ new</button>
+      </div>
+      <ul id="case-list"></ul>
+    </aside>
+
+    <section id="detail">
+      <div id="columns"></div>
+      <footer id="detail-footer"></footer>
+    </section>
+  </main>
+
+  <script type="module" src="/static/app.js"></script>
+</body>
+</html>

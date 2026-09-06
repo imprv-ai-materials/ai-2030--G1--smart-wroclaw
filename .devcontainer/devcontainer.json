@@ -4,19 +4,18 @@
   "service": "app",
   "workspaceFolder": "/workspaces/smart_wroclaw",
   // Bring the whole stack up with the container, not just `app`.
-  "runServices": ["app", "db", "inngest", "label-studio"],
+  "runServices": ["app", "db", "inngest"],
   "remoteUser": "vscode",
   // Keep the service's `sleep infinity` command instead of overriding it.
   "overrideCommand": false,
 
   // Host access to in-network services. VS Code assigns free host ports and
   // lists them in the Ports panel — nothing is hard-bound, so no OS/port clashes.
-  "forwardPorts": [3100, 8101, "inngest:8288", "label-studio:8080", "db:5432"],
+  "forwardPorts": [3100, 8101, "inngest:8288", "db:5432"],
   "portsAttributes": {
     "3100": { "label": "UI · Next.js", "onAutoForward": "notify" },
     "8101": { "label": "API + Inngest worker · FastAPI" },
     "8288": { "label": "Inngest dev dashboard" },
-    "8080": { "label": "Label Studio" },
     "5432": { "label": "Postgres" }
   },
 
