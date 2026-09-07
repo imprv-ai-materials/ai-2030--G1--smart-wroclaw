@@ -4,8 +4,6 @@
 
 <kbd>🇬🇧 &nbsp;<a href="README.md"><b>English</b></a>&nbsp;</kbd> &nbsp;&nbsp; <kbd>🇵🇱 &nbsp;<b>Polski</b> ✓&nbsp;</kbd>
 
-_Wersją źródłową jest [angielski README](README.md) — tłumaczenie może być nieco opóźnione._
-
 </div>
 
 ---
