@@ -10,9 +10,18 @@
 
 # Smart Wrocław
 
+<div align="center">
+
+![Aplikacja Smart Wrocław](docs/assets/app.png)
+
+**Smart Wrocław — aplikacja dla mieszkańców.**
+
+</div>
+
+## Część PROGRAMU AI 2030
+
 [![PROGRAM AI 2030 — od hobbystycznego budowniczego AI do profesjonalisty](docs/assets/promo1.png)](https://app.imprv.ai/goal_package/5f9e6bc2-7b4b-47a1-90b4-d905796719c0)
 
-> ### Część **PROGRAMU AI 2030**
 > Ten projekt jest częścią **[PROGRAMU AI 2030](https://app.imprv.ai/goal_package/5f9e6bc2-7b4b-47a1-90b4-d905796719c0)** — zestawu praktycznych kursów, w których budujemy **28 projektów, każdy napędzany wieloma algorytmami AI i ML**, aby rozwiązać realny problem biznesowy. **Smart Wrocław** to jedna z aplikacji powstających po drodze.
 >
 > W szczególności ten projekt należy do kursu **_„Od hobbystycznego budowniczego AI do profesjonalisty”_** — otwierającego program.

@@ -10,9 +10,18 @@
 
 # Smart Wrocław
 
+<div align="center">
+
+![Smart Wrocław app](docs/assets/app.png)
+
+**Smart Wrocław — the citizen application.**
+
+</div>
+
+## Part of PROGRAM AI 2030
+
 [![PROGRAM AI 2030 — from hobbyist AI builder to professional](docs/assets/promo1.png)](https://app.imprv.ai/goal_package/5f9e6bc2-7b4b-47a1-90b4-d905796719c0)
 
-> ### Part of **PROGRAM AI 2030**
 > This project is part of **[PROGRAM AI 2030](https://app.imprv.ai/goal_package/5f9e6bc2-7b4b-47a1-90b4-d905796719c0)** — a set of hands-on courses in which we build **28 projects, each powered by many AI and ML algorithms** to solve a real business problem. **Smart Wrocław** is one of the applications built along the way.
 >
 > In particular, this project belongs to the course **_"Od hobbystycznego budowniczego AI do profesjonalisty"_** (*"From hobbyist AI builder to professional"*) — the program's opening course.
