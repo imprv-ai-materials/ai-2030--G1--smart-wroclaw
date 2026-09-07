@@ -6,30 +6,55 @@ A citizen app for the city of **Wrocław**.
 
 A one-click, reproducible environment. Python 3.12, Poetry, Node 20, pnpm,
 Postgres and the Inngest dev server all come up as a Compose stack — identically
-on **macOS, Windows (WSL2) and Linux**. No local Python/Node/Postgres needed,
-just Docker + an editor with Dev Containers support.
+on **macOS, Windows (WSL2) and Linux**. All you need is **Docker** and an editor
+with Dev Containers support (VS Code + the *Dev Containers* extension, or the
+`devcontainer` CLI). No local Python/Node/Postgres install.
+
+### 1. Open in the container
 
 1. Open this folder in VS Code.
 2. **Reopen in Container** (Command Palette → *Dev Containers: Reopen in
-   Container*). First build takes a few minutes; `postCreate.sh` installs deps and
-   applies migrations, then prints **"Devcontainer ready"**.
-3. Start the app from two terminals:
+   Container*). The first build takes a few minutes; `postCreate.sh` then installs
+   the backend + frontend deps and applies the DB migrations, and prints
+   **"Devcontainer ready"**.
 
-   ```bash
-   poetry run uvicorn api.main:app --app-dir api --host 0.0.0.0 --reload --port 8101   # REST + worker
-   pnpm --dir ui dev                                                     # UI
-   ```
+### 2. Start the stack — three terminals
 
-Open the forwarded ports (VS Code → **Ports**):
+Open three terminals **inside the container** (VS Code → *Terminal*). In each one,
+activate the project virtualenv first with **`penv`** (an alias for
+`source .venv/bin/activate`), then run the pipeline:
+
+```bash
+# Terminal 1 — backend: REST API + Inngest worker (role=all) on :8101
+penv
+pypyr start_be
+
+# Terminal 2 — load the demo city-events dataset (one-off; see note)
+penv
+pypyr seed_events
+
+# Terminal 3 — Next.js UI on :3100
+penv
+pypyr start_ui
+```
+
+> `pypyr seed_events` appends the demo events to the database, so run it **once** —
+> re-running it duplicates the rows. Skip it if you already have data.
+
+`penv`, `pypyr` and the pipelines come preconfigured in the container — no extra
+setup. Inside the container always use **`pypyr start_be`** (not `start_api` /
+`start_worker` / `start_tilt`): those target the native host stack and break chat
+turns when run in the container.
+
+### 3. Open it
+
+Open the forwarded ports (VS Code → **Ports** panel):
 
 | Service      | URL                        |
 |--------------|----------------------------|
 | UI           | http://localhost:3100      |
 | API + docs   | http://localhost:8101/docs |
 | Inngest      | http://localhost:8288      |
-
-> Inside the container, use the plain `uvicorn` / `pnpm` commands above — **not**
-> `pypyr start_tilt`, which hardcodes host-oriented URLs for the native workflow.
 
 Full details, gotchas and the native (non-container) workflow:
 [`.devcontainer/README.md`](.devcontainer/README.md).

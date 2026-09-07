@@ -1,0 +1,57 @@
+%% MLZero — metric-driven, dataset-first loop for improving an ai/ agent.
+%% Driven by DEFECTS and by EXPERIMENTS/OPTIMIZATION (cheaper model, new technique).
+%% Source: .claude/skills/MLZero/SKILL.md, running against api/api/ai/<agent>/
+%% (datasets/ + evaluations/ + versions/) via `pypyr eval`.
+%% Render: mmdc -i docs/mlzero.mmd -o docs/mlzero.svg
+%%{init: {'flowchart': {'subGraphTitleMargin': {'top': 6, 'bottom': 20}, 'nodeSpacing': 45, 'rankSpacing': 45}}}%%
+flowchart TD
+    START["Trigger"]:::io
+    KIND{"What's driving the change?"}:::gate
+
+    %% ── defect lane ────────────────────────────────────────────────
+    LOC["Locate the failing agent<br/>trace guardrails → extractor → router → lane<br/>chat_messages.data.intent names the lane"]:::step
+    subgraph DF["iron rule · dataset before code"]
+        direction TB
+        CAP["Capture the failing case as a gold row<br/>api/api/ai/&lt;agent&gt;/datasets/&lt;name&gt;.jsonl<br/>input + expected label · split · difficulty · note"]:::data
+        BASE["Baseline it — expect RED<br/>pypyr eval agent=&lt;agent&gt; show_errors=1"]:::eval
+        CAP --> BASE
+    end
+
+    %% ── experiment lane ───────────────────────────────────────────
+    OBJ["Set the objective + tolerance<br/>cheaper / faster model · new technique · approach<br/>e.g. 'hold accuracy within 1pt at lower cost'"]:::exp
+    BENCH["Datasets ARE the benchmark<br/>add cases only to probe a specific gap"]:::data
+    OBJ --> BENCH
+
+    GATE{"Version gate — ASK the user<br/>edit in place  vs  fork a copy<br/>(experiments → fork, for A/B + rollback)"}:::gate
+    INPLACE["Edit current version in place<br/>versions/&lt;current&gt;/"]:::step
+    FORK["Fork a new version<br/>cp -r versions/vN versions/vN+1"]:::step
+
+    CHANGE["Apply ONE change<br/>defect: smallest fix<br/>experiment: pin cheaper model · new technique<br/>prompts.py · agent.py · current.yaml model:"]:::step
+    MEASURE["Re-measure / A-B on the datasets<br/>sample=25 fast → split=all full · llm=1 for a model swap<br/>pypyr eval version=candidate vs baseline · history=1"]:::eval
+    DECIDE{"Goal met AND nothing regressed?<br/>defect: case passes<br/>experiment: quality within tolerance at lower cost"}:::gate
+
+    REVERT["Revert · form a new hypothesis"]:::step
+    KEEP["Keep it<br/>if forked → version: vN+1 (+ model:) in current.yaml"]:::good
+    STOP{"Goal satisfied, or<br/>hypotheses stopped moving it?"}:::gate
+    DONE["Done — report before/after from eval_runs.jsonl<br/>'tried, didn't beat the bar' is a valid outcome"]:::io
+
+    START --> KIND
+    KIND -->|defect · bad turn / bug| LOC --> CAP
+    KIND -->|experiment · optimization| OBJ
+    BASE --> GATE
+    BENCH --> GATE
+    GATE -->|in place| INPLACE --> CHANGE
+    GATE -->|new version| FORK --> CHANGE
+    CHANGE --> MEASURE --> DECIDE
+    DECIDE -->|no| REVERT --> CHANGE
+    DECIDE -->|yes| KEEP --> STOP
+    STOP -->|not yet| CHANGE
+    STOP -->|yes| DONE
+
+    classDef step fill:#eaf0ff,stroke:#2b6cff,color:#111;
+    classDef eval fill:#fff4e5,stroke:#d98b00,color:#111;
+    classDef data fill:#eaf7ee,stroke:#2e9e4f,color:#111;
+    classDef exp fill:#f3ecff,stroke:#7c3aed,color:#111;
+    classDef gate fill:#fdeaf1,stroke:#c2367a,color:#111;
+    classDef good fill:#e6f9ed,stroke:#1f9d55,color:#111;
+    classDef io fill:#f6f6f7,stroke:#999,color:#111;
