@@ -1,3 +1,6 @@
+# macOS
+.DS_Store
+
 # Project-root Python tooling — Poetry venv + caches now live here (see pyproject.toml).
 .venv/
 __pycache__/
