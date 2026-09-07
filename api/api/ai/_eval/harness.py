@@ -96,7 +96,10 @@ def _understanding_from_filters(f: dict) -> Any:
 
 
 def _run_guardrails(agent, row, ctx):
-    v = agent.check(row["text"])
+    # `history` (optional prior turns) lets a context-only follow-up like
+    # "a jednak zielony" be judged on-topic inside a running flow — rows without
+    # it (the common case) pass None and behave exactly as before.
+    v = agent.check(row["text"], row.get("history"))
     return {"allow": v.allow, "reason": v.reason}
 
 

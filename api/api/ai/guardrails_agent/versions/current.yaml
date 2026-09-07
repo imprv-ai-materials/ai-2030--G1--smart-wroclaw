@@ -1,6 +1,7 @@
 # CURRENT — which version of guardrails the app runs.
 # The loader imports `api.ai.guardrails_agent.versions.<version>` and uses its AGENT
 # class. Promote by changing `version`; no code change.
-version: v1
-# Optional per-deployment model override; null → the version's default / config.
+version: v2
+# Optional per-deployment model OVERRIDE. Leave null: v2 pins its own model
+# (gpt-5.4-mini) at the version level, and the service defers to that pin.
 model: null

@@ -1,0 +1,9 @@
+{"ts": "2026-09-07T11:40:26+00:00", "agent": "guardrails_agent", "version": "v1", "dataset": "guardrails", "split": "all", "sample": 100, "mode": "classification", "metrics": {"accuracy": 0.9}}
+{"ts": "2026-09-07T11:43:10+00:00", "agent": "guardrails_agent", "version": "v1", "dataset": "guardrails", "split": "all", "sample": 100, "mode": "classification", "metrics": {"accuracy": 0.8485}}
+{"ts": "2026-09-07T11:43:59+00:00", "agent": "guardrails_agent", "version": "v1", "dataset": "guardrails", "split": "all", "sample": 100, "mode": "classification", "metrics": {"accuracy": 1.0}}
+{"ts": "2026-09-07T11:59:40+00:00", "agent": "guardrails_agent", "version": "v1", "dataset": "guardrails", "split": "all", "sample": 100, "mode": "classification", "metrics": {"accuracy": 0.9714}}
+{"ts": "2026-09-07T12:01:33+00:00", "agent": "guardrails_agent", "version": "v2", "dataset": "guardrails", "split": "all", "sample": 100, "mode": "classification", "metrics": {"accuracy": 0.9429}}
+{"ts": "2026-09-07T12:02:01+00:00", "agent": "guardrails_agent", "version": "v2", "dataset": "guardrails", "split": "all", "sample": 100, "mode": "classification", "metrics": {"accuracy": 1.0}}
+{"ts": "2026-09-07T12:10:19+00:00", "agent": "guardrails_agent", "version": "v1", "dataset": "guardrails", "split": "all", "sample": 100, "mode": "classification", "metrics": {"accuracy": 0.9714}}
+{"ts": "2026-09-07T12:11:21+00:00", "agent": "guardrails_agent", "version": "v2", "dataset": "guardrails", "split": "all", "sample": 100, "mode": "classification", "metrics": {"accuracy": 1.0}}
+{"ts": "2026-09-07T12:13:32+00:00", "agent": "guardrails_agent", "version": "v2", "dataset": "guardrails", "split": "all", "sample": 100, "mode": "classification", "metrics": {"accuracy": 1.0}}
