@@ -13,6 +13,7 @@ dist/
 _volumes/
 .deepeval
 .pnpm-store
+.vscode
 
 # Dataset annotator (/.annotator) — backups + atomic-write temp files
 *.jsonl.bak
