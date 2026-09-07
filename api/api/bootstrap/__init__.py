@@ -38,11 +38,24 @@ from api.bootstrap.agents import (
     get_search_agent,
 )
 from api.config import Config, config
-from api.contexts_boundaries.auth_bc.repositories import AuthTokensRepository, UsersRepository
-from api.contexts_boundaries.auth_bc.services import AuthService
-from api.contexts_boundaries.chat_bc import AgentRunsRepository, ChatRepository
-from api.contexts_boundaries.city_events_bc.repositories import EventsRepository
-from api.contexts_boundaries.city_events_bc.services import EventsService
+from api.contexts_boundaries.auth_bc.repositories import (
+    AbstractAuthTokensRepository,
+    AbstractUsersRepository,
+    AuthTokensRepository,
+    UsersRepository,
+)
+from api.contexts_boundaries.auth_bc.services import AbstractAuthService, AuthService
+from api.contexts_boundaries.chat_bc import (
+    AbstractAgentRunsRepository,
+    AbstractChatRepository,
+    AgentRunsRepository,
+    ChatRepository,
+)
+from api.contexts_boundaries.city_events_bc.repositories import (
+    AbstractEventsRepository,
+    EventsRepository,
+)
+from api.contexts_boundaries.city_events_bc.services import AbstractEventsService, EventsService
 from psycopg_pool import ConnectionPool
 
 
@@ -108,15 +121,15 @@ class Bootstrap:
     # AUTH BC
     #
     @cached_property
-    def users_repository(self) -> UsersRepository:
+    def users_repository(self) -> AbstractUsersRepository:
         return UsersRepository(self.db_client)
 
     @cached_property
-    def auth_tokens_repository(self) -> AuthTokensRepository:
+    def auth_tokens_repository(self) -> AbstractAuthTokensRepository:
         return AuthTokensRepository(self.db_client)
 
     @cached_property
-    def auth_service(self) -> AuthService:
+    def auth_service(self) -> AbstractAuthService:
         return AuthService(
             users_repository=self.users_repository,
             auth_tokens_repository=self.auth_tokens_repository,
@@ -174,22 +187,22 @@ class Bootstrap:
     # CITY EVENTS BC
     #
     @cached_property
-    def events_repository(self) -> EventsRepository:
+    def events_repository(self) -> AbstractEventsRepository:
         return EventsRepository(self.db_client)
 
     @cached_property
-    def events_service(self) -> EventsService:
+    def events_service(self) -> AbstractEventsService:
         return EventsService(self.events_repository, geocoding_client=self.here_client)
 
     #
     # CHAT BC
     #
     @cached_property
-    def chat_repository(self) -> ChatRepository:
+    def chat_repository(self) -> AbstractChatRepository:
         return ChatRepository(self.db_client)
 
     @cached_property
-    def agent_runs_repository(self) -> AgentRunsRepository:
+    def agent_runs_repository(self) -> AbstractAgentRunsRepository:
         return AgentRunsRepository(self.db_client)
 
 
@@ -208,6 +221,6 @@ def get_bootstrap_dep() -> Bootstrap:
     return get_bootstrap()
 
 
-def get_auth_service_dep() -> "AuthService":
+def get_auth_service_dep() -> "AbstractAuthService":
     """FastAPI dependency — the auth BC's service off the process container."""
     return get_bootstrap().auth_service

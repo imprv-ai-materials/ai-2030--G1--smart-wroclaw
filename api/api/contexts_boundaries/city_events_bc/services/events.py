@@ -7,6 +7,7 @@ ingest path that bulk-loads demo data.
 
 from __future__ import annotations
 
+import abc
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
@@ -82,7 +83,68 @@ _NOT_NULL_DEFAULTS: dict[str, Any] = {
 }
 
 
-class EventsService:
+class AbstractEventsService(abc.ABC):
+    """The user city-map feed: public reads + resident/seed writes."""
+
+    @abc.abstractmethod
+    def list_events(
+        self,
+        status: EventStatus | None = None,
+        type_: EventType | None = None,
+        category: ReportCategory | None = None,
+        district: str | None = None,
+        severity: Severity | None = None,
+        q: str | None = None,
+    ) -> list[CityEvent]: ...
+
+    @abc.abstractmethod
+    def get_event(self, event_id: int) -> CityEvent: ...
+
+    @abc.abstractmethod
+    def prolong_event(
+        self,
+        event_id: int,
+        requester_id: int,
+        extend_by: timedelta = EVENT_DEFAULT_TTL,
+    ) -> CityEvent:
+        """Push an event's expiry out by `extend_by` — only the author may do so."""
+
+    @abc.abstractmethod
+    def geocode_event(self, event_id: int) -> CityEvent:
+        """Resolve the event's location string to coordinates and persist them."""
+
+    @abc.abstractmethod
+    def create_event(
+        self,
+        *,
+        type_: EventType,
+        title: str,
+        description: str,
+        reporter_id: int | None = None,
+        source: EventSource = EventSource.USER,
+        status: EventStatus = EventStatus.ACTIVE,
+        category: ReportCategory | None = None,
+        severity: Severity | None = None,
+        location_text: str | None = None,
+        address: str | None = None,
+        lat: float | None = None,
+        lng: float | None = None,
+        starts_at: datetime | None = None,
+        ends_at: datetime | None = None,
+        subtype: str | None = None,
+        district: str | None = None,
+        expires_at: datetime | None = None,
+        contact_phone: str | None = None,
+        image_url: str | None = None,
+        details: dict[str, Any] | None = None,
+    ) -> CityEvent: ...
+
+    @abc.abstractmethod
+    def ingest(self, raw_events: list[dict[str, Any]]) -> list[CityEvent]:
+        """Bulk-insert events (seed / demo)."""
+
+
+class EventsService(AbstractEventsService):
     def __init__(
         self,
         events_repository: AbstractEventsRepository,

@@ -11,6 +11,7 @@ reveal whether an address exists — they always return the same neutral message
 
 from __future__ import annotations
 
+import abc
 from datetime import datetime, timedelta, timezone
 from html import escape
 
@@ -34,7 +35,42 @@ from api.contexts_boundaries.auth_bc.schemas import MeResponse, TokenResponse
 from loguru import logger
 
 
-class AuthService:
+class AbstractAuthService(abc.ABC):
+    """Registration, login, email confirmation, password reset / change."""
+
+    # ── registration / login ─────────────────────────────────────────────────
+    @abc.abstractmethod
+    def register(self, email: str, password: str) -> User: ...
+
+    @abc.abstractmethod
+    def login(self, email: str, password: str) -> TokenResponse: ...
+
+    @abc.abstractmethod
+    def get_me(self, user_id: int) -> MeResponse: ...
+
+    # ── email confirmation ───────────────────────────────────────────────────
+    @abc.abstractmethod
+    def confirm_email(self, raw_token: str) -> User: ...
+
+    @abc.abstractmethod
+    def resend_confirmation(self, email: str) -> None:
+        """Best-effort resend; silent on unknown / already-confirmed addresses."""
+
+    # ── password reset / change ──────────────────────────────────────────────
+    @abc.abstractmethod
+    def request_password_reset(self, email: str) -> None:
+        """Anti-enumeration: never reveals whether the address exists."""
+
+    @abc.abstractmethod
+    def reset_password(self, raw_token: str, new_password: str) -> None: ...
+
+    @abc.abstractmethod
+    def change_password(
+        self, user_id: int, current_password: str, new_password: str
+    ) -> None: ...
+
+
+class AuthService(AbstractAuthService):
     def __init__(
         self,
         users_repository: AbstractUsersRepository,
@@ -217,4 +253,4 @@ def _reset_email_html(app_name: str, link: str) -> str:
     )
 
 
-__all__ = ["AuthService"]
+__all__ = ["AbstractAuthService", "AuthService"]

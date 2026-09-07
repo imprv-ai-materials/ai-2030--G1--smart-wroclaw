@@ -25,7 +25,7 @@ from api.contexts_boundaries.auth_bc.schemas import (
     ResetPasswordRequest,
     TokenResponse,
 )
-from api.contexts_boundaries.auth_bc.services import AuthService
+from api.contexts_boundaries.auth_bc.services import AbstractAuthService
 from fastapi import APIRouter, Depends, status
 
 auth_router = APIRouter(prefix="/auth", tags=["auth"])
@@ -34,7 +34,7 @@ auth_router = APIRouter(prefix="/auth", tags=["auth"])
 @auth_router.post("/register", response_model=MessageResponse, status_code=status.HTTP_202_ACCEPTED)
 def register(
     body: RegisterRequest,
-    auth_service: AuthService = Depends(get_auth_service_dep),
+    auth_service: AbstractAuthService = Depends(get_auth_service_dep),
 ) -> MessageResponse:
     auth_service.register(body.email, body.password)
     return MessageResponse(
@@ -45,7 +45,7 @@ def register(
 @auth_router.post("/login", response_model=TokenResponse)
 def login(
     body: LoginRequest,
-    auth_service: AuthService = Depends(get_auth_service_dep),
+    auth_service: AbstractAuthService = Depends(get_auth_service_dep),
 ) -> TokenResponse:
     return auth_service.login(body.email, body.password)
 
@@ -53,7 +53,7 @@ def login(
 @auth_router.get("/me", response_model=MeResponse)
 def me(
     current: User = Depends(authenticate),
-    auth_service: AuthService = Depends(get_auth_service_dep),
+    auth_service: AbstractAuthService = Depends(get_auth_service_dep),
 ) -> MeResponse:
     return auth_service.get_me(current.id)
 
@@ -61,7 +61,7 @@ def me(
 @auth_router.post("/confirm-email", response_model=ConfirmEmailResponse)
 def confirm_email(
     body: ConfirmEmailRequest,
-    auth_service: AuthService = Depends(get_auth_service_dep),
+    auth_service: AbstractAuthService = Depends(get_auth_service_dep),
 ) -> ConfirmEmailResponse:
     auth_service.confirm_email(body.token)
     return ConfirmEmailResponse(message="Adres email został potwierdzony.")
@@ -72,7 +72,7 @@ def confirm_email(
 )
 def resend_confirmation(
     body: EmailRequest,
-    auth_service: AuthService = Depends(get_auth_service_dep),
+    auth_service: AbstractAuthService = Depends(get_auth_service_dep),
 ) -> MessageResponse:
     auth_service.resend_confirmation(body.email)
     return MessageResponse(
@@ -85,7 +85,7 @@ def resend_confirmation(
 )
 def request_password_reset(
     body: EmailRequest,
-    auth_service: AuthService = Depends(get_auth_service_dep),
+    auth_service: AbstractAuthService = Depends(get_auth_service_dep),
 ) -> MessageResponse:
     auth_service.request_password_reset(body.email)
     return MessageResponse(message="Jeśli konto istnieje, wysłaliśmy link do resetu hasła.")
@@ -94,7 +94,7 @@ def request_password_reset(
 @auth_router.post("/reset-password", response_model=MessageResponse)
 def reset_password(
     body: ResetPasswordRequest,
-    auth_service: AuthService = Depends(get_auth_service_dep),
+    auth_service: AbstractAuthService = Depends(get_auth_service_dep),
 ) -> MessageResponse:
     auth_service.reset_password(body.token, body.new_password)
     return MessageResponse(message="Hasło zostało zmienione. Możesz się zalogować.")
@@ -104,7 +104,7 @@ def reset_password(
 def change_password(
     body: ChangePasswordRequest,
     current: User = Depends(authenticate),
-    auth_service: AuthService = Depends(get_auth_service_dep),
+    auth_service: AbstractAuthService = Depends(get_auth_service_dep),
 ) -> MessageResponse:
     auth_service.change_password(current.id, body.current_password, body.new_password)
     return MessageResponse(message="Hasło zostało zmienione.")

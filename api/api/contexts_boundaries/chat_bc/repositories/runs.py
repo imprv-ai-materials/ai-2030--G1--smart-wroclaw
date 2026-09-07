@@ -5,6 +5,7 @@ component as it completes, then finalizes the run onto the assistant message it
 produced. The API reads runs back to expose them (ADMIN) and rehydrate the trace.
 """
 
+import abc
 import json
 from datetime import datetime, timezone
 from typing import Any
@@ -27,7 +28,46 @@ def _jsonb(value: Any) -> str | None:
     return None if value is None else json.dumps(value, ensure_ascii=False, default=str)
 
 
-class AgentRunsRepository:
+class AbstractAgentRunsRepository(abc.ABC):
+    @abc.abstractmethod
+    def create_run(self, conversation_id: int, intent: str | None = None) -> AgentRun: ...
+
+    @abc.abstractmethod
+    def add_step(
+        self,
+        run_id: int,
+        seq: int,
+        component: str,
+        *,
+        status: RunStatus = RunStatus.DONE,
+        input: Any = None,
+        output: Any = None,
+        models: list[str] | None = None,
+        prompt_tokens: int = 0,
+        completion_tokens: int = 0,
+    ) -> AgentRunStep: ...
+
+    @abc.abstractmethod
+    def finalize_run(
+        self,
+        run_id: int,
+        *,
+        message_id: int | None,
+        status: RunStatus,
+        intent: str | None = None,
+        prompt_tokens: int = 0,
+        completion_tokens: int = 0,
+        error: str | None = None,
+    ) -> None: ...
+
+    @abc.abstractmethod
+    def get_run(self, run_id: int) -> AgentRun | None: ...
+
+    @abc.abstractmethod
+    def get_run_for_message(self, message_id: int) -> AgentRun | None: ...
+
+
+class AgentRunsRepository(AbstractAgentRunsRepository):
     def __init__(self, db_client: DBClient) -> None:
         self._db = db_client
 

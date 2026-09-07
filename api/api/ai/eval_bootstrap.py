@@ -35,7 +35,7 @@ from api.adapters.llm import OpenAIClient
 from api.ai import load_current
 from api.ai.event_extractor import AbstractEventExtractor
 from api.contexts_boundaries.city_events_bc.repositories import AbstractEventsRepository
-from api.contexts_boundaries.city_events_bc.services import EventsService
+from api.contexts_boundaries.city_events_bc.services import AbstractEventsService, EventsService
 
 if TYPE_CHECKING:  # `api.config` is imported lazily at runtime (see `config`).
     from api.config import Config
@@ -108,7 +108,7 @@ class Bootstrap:
     # in-memory, corpus-backed repository, so the retrieval eval scores production
     # ranking/matching offline. No geocoder: retrieval never needs coordinates.
     #
-    def build_events_service(self, repository: AbstractEventsRepository) -> EventsService:
+    def build_events_service(self, repository: AbstractEventsRepository) -> AbstractEventsService:
         return EventsService(repository)
 
 

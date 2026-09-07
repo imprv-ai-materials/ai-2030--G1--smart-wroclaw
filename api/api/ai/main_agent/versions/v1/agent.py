@@ -34,7 +34,7 @@ from api.contexts_boundaries.city_events_bc.models import (
     coerce_draft_for_create,
     to_search_filters,
 )
-from api.contexts_boundaries.city_events_bc.services import EventsService
+from api.contexts_boundaries.city_events_bc.services import AbstractEventsService
 
 # -- Polish reply vocabulary ---------------------------------------------------
 
@@ -130,7 +130,7 @@ class MainAgent(AbstractMainAgent):
         report: AbstractReportAgent,
         analytics: AbstractAnalyticsAgent,
         geo: AbstractGeoResolver,
-        events_service: EventsService,
+        events_service: AbstractEventsService,
     ) -> None:
         self._guardrails = guardrails
         self._extractor = extractor

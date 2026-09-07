@@ -1,3 +1,6 @@
-from api.contexts_boundaries.auth_bc.services.auth_service import AuthService
+from api.contexts_boundaries.auth_bc.services.auth_service import (
+    AbstractAuthService,
+    AuthService,
+)
 
-__all__ = ["AuthService"]
+__all__ = ["AbstractAuthService", "AuthService"]
