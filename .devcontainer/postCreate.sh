@@ -6,10 +6,12 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."   # → smart_wroclaw project root
 
-echo "▸ Taking ownership of the named-volume mount points (.venv, ui/node_modules)…"
+echo "▸ Taking ownership of the named-volume mount points (.venv, ui/node_modules, ui/.next)…"
 # The volumes mount empty + root-owned; hand them to the current (vscode) user so
-# poetry / pnpm can write into them.
-sudo chown -R "$(id -u):$(id -g)" .venv ui/node_modules 2>/dev/null || true
+# poetry / pnpm / next can write into them. ui/.next MUST be here too — it's a
+# named volume (see compose.yaml) that shadows the bind mount, so next dev can't
+# mkdir .next/dev under it until vscode owns it ("EACCES: mkdir …/ui/.next/dev").
+sudo chown -R "$(id -u):$(id -g)" .venv ui/node_modules ui/.next 2>/dev/null || true
 
 # api/.env is gitignored, so a fresh clone won't have one. Seed dev defaults with
 # NO OpenAI key (the agents fall back to offline heuristics). db host/port here

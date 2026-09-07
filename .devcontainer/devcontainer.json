@@ -11,11 +11,14 @@
 
   // Host access to in-network services. VS Code assigns free host ports and
   // lists them in the Ports panel — nothing is hard-bound, so no OS/port clashes.
-  "forwardPorts": [3100, 8101, "inngest:8288", "db:5432"],
+  "forwardPorts": [3100, 8101, "db:5432"],
   "portsAttributes": {
     "3100": { "label": "UI · Next.js", "onAutoForward": "notify" },
     "8101": { "label": "API + Inngest worker · FastAPI" },
-    "8288": { "label": "Inngest dev dashboard" },
+    // The `inngest` service publishes its dashboard + event API on host 8488
+    // (see .devcontainer/compose.yaml — 8488, not 8288, to avoid the imprv
+    // clash). VS Code detects the published port; auto-open it in the browser.
+    "8488": { "label": "Inngest dev dashboard", "onAutoForward": "openBrowser" },
     "5432": { "label": "Postgres" }
   },
 

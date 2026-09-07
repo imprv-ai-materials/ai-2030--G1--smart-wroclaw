@@ -75,6 +75,13 @@ services:
     # points it at the app's function host. In role=all that host is on :8101.
     command: inngest dev --no-discovery -u http://app:8101/api/inngest
     restart: unless-stopped
+    # Publish the dev server (dashboard + event API, both on :8288) to a FIXED
+    # host port so it's reachable at http://localhost:8488 no matter what else
+    # is running. Host 8488 — not 8288 — so it can't collide with a sibling
+    # imprv Inngest already holding host :8288 (same +200 shift the repo-root
+    # compose.yaml uses). App→dev-server traffic stays internal on inngest:8288.
+    ports:
+      - "8488:8288"
     depends_on:
       - app
 
