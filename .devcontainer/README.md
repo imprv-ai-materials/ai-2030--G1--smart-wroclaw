@@ -63,11 +63,12 @@ native `docker compose` / Tilt run.
 | Orchestrator | **Tilt** (`pypyr start_tilt`) | Compose (auto, via the devcontainer) |
 | DB address | `localhost:5439` (from `api/.env`) | `db:5432` (compose env override) |
 
-> **Don't use `pypyr start_tilt` / `pypyr start_*` inside the container.** Those
-> shortcuts hardcode host-oriented URLs (`127.0.0.1:8488`, Docker socket for
-> Tilt) for the native workflow. In the container just run the plain `uvicorn` /
-> `pnpm` commands above — DB host, Inngest URL and role are already set as
-> container env vars.
+> **Inside the container use `pypyr start_be` + `pypyr start_ui` (or the plain
+> `uvicorn` / `pnpm` commands above) — not `start_tilt` / `start_api` /
+> `start_worker`.** Those three hardcode host-oriented URLs (`127.0.0.1:8488`,
+> Docker socket for Tilt) for the native workflow. `start_be` / `start_ui`
+> inherit the container env vars (DB host, Inngest URL, role), so they work in
+> both setups.
 
 ## Annotating eval datasets
 
@@ -88,6 +89,10 @@ python .annotator/annotate.py \
   folders — a macOS/Windows virtualenv or native module won't run under Linux, so
   the container keeps its own. If you ever change dependencies, re-run
   `poetry install` / `pnpm --dir ui install` (or rebuild the container).
+- **`ui/.next` is a named volume too**, so it is a *mount point* inside the
+  container: `rm -rf ui/.next` empties it but then fails with `Device or resource
+  busy`. Clear the cache with `find ui/.next -mindepth 1 -delete` instead (this is
+  what `pypyr start_ui` does).
 - **git:** this container mounts only `smart_wroclaw/`, but the repo's `.git`
   lives at the monorepo root above it, so run `git` from the host (or open the
   monorepo root as the workspace if you prefer git inside the container).

@@ -35,6 +35,9 @@ services:
       # named volume so the container (a non-host uid) never writes into the
       # host-owned .next on the bind mount — that cross-uid write is what triggers
       # Turbopack's "failed to create directory … (os error 13)".
+      # NOTE: because this makes ui/.next a MOUNT POINT, `rm -rf ui/.next` fails
+      # inside the container with "Device or resource busy" — clear its contents
+      # instead (`find ui/.next -mindepth 1 -delete`, as dev/start_ui.yaml does).
       - ui-next:/workspaces/smart_wroclaw/ui/.next
     environment:
       # Override the host-oriented values in api/.env: inside this network
