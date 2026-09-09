@@ -1,0 +1,1 @@
+{"ts": "2026-09-09T06:13:45+00:00", "agent": "search_agent", "version": "v1", "dataset": "search", "split": "dev", "sample": 100, "mode": "ranking", "metrics": {"hit_at_1": 0.5, "mrr": 0.6667, "recall_at_k": 1.0, "exclude_leaks": 1, "graded": 2}}

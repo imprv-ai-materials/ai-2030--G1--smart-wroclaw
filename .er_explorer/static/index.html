@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ER Explorer</title>
+  <link rel="stylesheet" href="/static/app.css" />
+</head>
+<body>
+  <header id="topbar">
+    <button id="toggle-sidebar" class="icon-btn" title="Show / hide the table list">☰</button>
+    <div id="title" class="name-bar">
+      <span id="source-name">er diagram</span>
+      <span id="counts" class="counts"></span>
+    </div>
+
+    <div class="toolbar">
+      <label class="tool-select" title="Auto-layout engine">
+        layout
+        <select id="layout-select">
+          <option value="fcose">fCoSE (organic)</option>
+          <option value="dagre-lr">Dagre (left→right)</option>
+          <option value="dagre-tb">Dagre (top→bottom)</option>
+          <option value="concentric">Concentric</option>
+          <option value="grid">Grid</option>
+        </select>
+      </label>
+      <button id="relayout" class="pill-btn" title="Re-run the layout">↻ layout</button>
+      <span class="sep"></span>
+      <button id="zoom-out" class="icon-btn" title="Zoom out">−</button>
+      <button id="zoom-in" class="icon-btn" title="Zoom in">+</button>
+      <button id="fit" class="pill-btn" title="Fit the whole diagram (F)">⤢ fit</button>
+      <span class="sep"></span>
+      <label class="toggle" title="Show table headers only (hide columns)">
+        <input type="checkbox" id="compact" /> compact
+      </label>
+      <label class="toggle" title="Show inferred (non-FK-constraint) links">
+        <input type="checkbox" id="show-fuzzy" checked /> fuzzy links
+      </label>
+    </div>
+  </header>
+
+  <main id="layout">
+    <aside id="sidebar">
+      <div class="sidebar-head">
+        <input id="search" type="text" placeholder="filter tables…" autocomplete="off" />
+      </div>
+      <div class="sidebar-actions">
+        <span id="visible-count" class="muted">0 tables</span>
+        <span class="grow"></span>
+        <button id="show-all" class="mini-btn">all</button>
+        <button id="hide-all" class="mini-btn">none</button>
+      </div>
+      <ul id="table-list"></ul>
+
+      <div class="legend">
+        <div class="legend-row"><span class="kbadge kb-pk">PK</span> primary key</div>
+        <div class="legend-row"><span class="kbadge kb-fk">FK</span> foreign key</div>
+        <div class="legend-row"><span class="kbadge kb-uk">UK</span> unique</div>
+        <div class="legend-row"><span class="edge-swatch solid"></span> FK constraint</div>
+        <div class="legend-row"><span class="edge-swatch dashed"></span> inferred (fuzzy)</div>
+      </div>
+    </aside>
+
+    <section id="stage">
+      <div id="cy"></div>
+      <div id="hint" class="hint">scroll to zoom · drag to pan · click a table to focus · click empty space to reset</div>
+    </section>
+
+    <aside id="inspector" class="hidden">
+      <div class="insp-head">
+        <span id="insp-title">table</span>
+        <button id="insp-close" class="icon-btn" title="Close">×</button>
+      </div>
+      <div id="insp-body"></div>
+    </aside>
+  </main>
+
+  <!-- drawing + autolayout libraries, vendored (offline). Load order matters:
+       cytoscape core → dagre → cytoscape-dagre → layout-base → cose-base →
+       cytoscape-fcose → node-html-label. Each extension auto-registers against
+       the global `cytoscape`. -->
+  <script src="/static/vendor/cytoscape.min.js"></script>
+  <script src="/static/vendor/dagre.min.js"></script>
+  <script src="/static/vendor/cytoscape-dagre.js"></script>
+  <script src="/static/vendor/layout-base.js"></script>
+  <script src="/static/vendor/cose-base.js"></script>
+  <script src="/static/vendor/cytoscape-fcose.js"></script>
+  <script src="/static/vendor/cytoscape-node-html-label.min.js"></script>
+  <script src="/static/app.js"></script>
+</body>
+</html>

@@ -2,6 +2,7 @@
   "name": "smart-wroclaw-ui",
   "version": "0.1.0",
   "private": true,
+  "license": "PolyForm-Noncommercial-1.0.0",
   "scripts": {
     "sync-map-worker": "cp -f node_modules/maplibre-gl/dist/maplibre-gl-worker.mjs node_modules/maplibre-gl/dist/maplibre-gl-shared.mjs public/",
     "dev": "pnpm run sync-map-worker && next dev -p 3100",

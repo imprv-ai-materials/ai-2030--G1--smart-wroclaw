@@ -1,15 +1,17 @@
-"""analytics_agent · v1 — deterministic count over the events repo, geo-scoped.
+"""analytics_agent · v1 — deterministic count over the city-events service, geo-scoped.
 
 Projects the reading onto filters, fetches ACTIVE events, narrows to the geo scope
 (a district name, or a radius around a point via haversine), counts, and buckets by
 type. The number is always computed in code; the reply is a Polish template — unless
 an OpenAI key is present, in which case the model only *phrases* the same number.
+
+Events are read only through the `EventsService` — never a repository — so this
+agent honours the city-events BC boundary (and the service applies the expiry drop).
 """
 
 from __future__ import annotations
 
 import math
-from datetime import datetime, timezone
 from typing import Any
 
 from api.adapters.llm import OpenAIClient
@@ -21,11 +23,7 @@ from api.contexts_boundaries.city_events_bc.models import (
     EventUnderstanding,
     to_search_filters,
 )
-from api.contexts_boundaries.city_events_bc.repositories import AbstractEventsRepository
-
-
-def _utcnow() -> datetime:
-    return datetime.now(tz=timezone.utc)
+from api.contexts_boundaries.city_events_bc.services import AbstractEventsService
 
 
 def _haversine_m(lat1: float, lng1: float, lat2: float, lng2: float) -> float:
@@ -47,12 +45,12 @@ def _plural_events(n: int) -> str:
 class AnalyticsAgent(AbstractAnalyticsAgent):
     def __init__(
         self,
-        events_repository: AbstractEventsRepository,
+        events_service: AbstractEventsService,
         openai_client: OpenAIClient | None = None,
         model: str | None = None,
         system_prompt: str = SYSTEM_PROMPT,
     ) -> None:
-        self._events = events_repository
+        self._events = events_service
         self._client = openai_client
         self._model = model
         self._system_prompt = system_prompt
@@ -64,14 +62,13 @@ class AnalyticsAgent(AbstractAnalyticsAgent):
         scope: dict[str, Any] | None = None,
     ) -> AnalyticsAnswer:
         filters = to_search_filters(understanding)
-        events = self._events.list(
+        # Through the SERVICE — it applies the expiry drop, so nothing to repeat here.
+        events = self._events.list_events(
             status=EventStatus.ACTIVE,
             types=filters.get("types"),  # a candidate SET, not a single type
             category=filters["category"],
             district=filters["district"],
         )
-        now = _utcnow()
-        events = [e for e in events if e.expires_at is None or e.expires_at > now]
         events = self._apply_scope(events, scope)
 
         count = len(events)

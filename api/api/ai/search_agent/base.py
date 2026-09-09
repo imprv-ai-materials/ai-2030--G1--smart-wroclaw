@@ -2,9 +2,11 @@
 
 Turns the extractor's structured reading into a *ranked* list of events for the
 map + cards. Returning a plain `list[CityEvent]` (a domain model) means there's no
-payload type to define here — the value is the ORDER. The concrete version depends
-only on an events repository, so the whole thing runs offline against the in-memory
-eval corpus; ranking quality is scored by the `main_agent` IR loop.
+payload type to define here — the value is the ORDER. The concrete version reads
+events through the city-events SERVICE (never a repository), so the BC boundary
+holds; it still runs offline against the in-memory eval corpus (that corpus repo
+wrapped in a real `EventsService`), and ranking quality is scored by the
+`main_agent` IR loop.
 """
 
 from abc import ABC, abstractmethod

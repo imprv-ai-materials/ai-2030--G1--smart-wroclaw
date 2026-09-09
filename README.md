@@ -105,3 +105,19 @@ smart_wroclaw/            ← project root: Poetry (pyproject.toml, poetry.lock,
 The architecture mirrors the sibling `imprv-ai-service` / `imprv-api` services:
 bounded contexts, layered repositories/services, a pypika `DBClient`, an API/worker
 split, and Inngest for background jobs.
+
+## License
+
+Smart Wrocław is **source-available** under the
+[PolyForm Noncommercial License 1.0.0](LICENSE).
+
+- ✅ You may **use, run, study, modify, and share** it — including your changes —
+  for any **noncommercial** purpose, free of charge.
+- ⛔ **Commercial use is not permitted** under this license — in whole or in part.
+- 🤝 **Commercial use** is available **only with prior written approval** of the
+  authors and **Improved AI**. To request a commercial license, contact Improved
+  AI at [imprv.ai](https://imprv.ai).
+
+See the [`LICENSE`](LICENSE) file for the full terms.
+
+Required Notice: Copyright Improved AI (https://imprv.ai)

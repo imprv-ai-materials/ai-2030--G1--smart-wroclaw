@@ -63,6 +63,13 @@ class Ctx:
         return InMemoryEventsRepository.from_corpus(corpus) if corpus.exists() else InMemoryEventsRepository([])
 
     @cached_property
+    def events_service(self):
+        # Agents read events through the SERVICE, never the repo — the same boundary
+        # they honour in production. Wrap the corpus-backed in-memory repo in the real
+        # `EventsService` so the eval exercises the true read path (filters + expiry).
+        return self._boot.build_events_service(self.repo)
+
+    @cached_property
     def extractor(self):
         # Router/report/analytics consume an EventUnderstanding; the eval feeds them
         # the real extractor's reading (CURRENT version) — an end-to-end-from-text run.
@@ -165,10 +172,10 @@ _REGISTRY: dict[str, Adapter] = {
     "guardrails_agent": Adapter("text", lambda c, cls: cls(c.client), _run_guardrails),
     "router_agent": Adapter("text", lambda c, cls: cls(c.client), _run_router),
     "event_extractor": Adapter("text", lambda c, cls: cls(c.client), _run_extractor),
-    "report_agent": Adapter("text", lambda c, cls: cls(c.repo), _run_report),
-    "analytics_agent": Adapter("question", lambda c, cls: cls(c.repo, openai_client=c.client), _run_analytics),
+    "report_agent": Adapter("text", lambda c, cls: cls(c.events_service), _run_report),
+    "analytics_agent": Adapter("question", lambda c, cls: cls(c.events_service, openai_client=c.client), _run_analytics),
     "geo_resolver": Adapter("text", lambda c, cls: cls(None), _run_geo),
-    "search_agent": Adapter("query", lambda c, cls: cls(c.repo), lambda a, r, c: {}, ranking=True),
+    "search_agent": Adapter("query", lambda c, cls: cls(c.events_service), lambda a, r, c: {}, ranking=True),
 }
 
 AGENTS = list(_REGISTRY.keys())

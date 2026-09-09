@@ -4,7 +4,8 @@ Gathers a city-event report across turns: prior draft ⊕ this turn's extraction
 inline-form answers (`merge_drafts`), checks it against the per-type required fields
 (`missing_fields`), and either asks for what's missing as an inline form the frontend
 renders, or — when complete — surfaces likely duplicates before create. Pure logic +
-one repo read; no LLM. The create itself stays a service call in the orchestrator.
+one read through the city-events SERVICE (never its repository); no LLM. The create
+itself is likewise a service call in the orchestrator.
 """
 
 from __future__ import annotations
@@ -23,7 +24,7 @@ from api.contexts_boundaries.city_events_bc.models import (
     missing_fields,
     to_event_draft,
 )
-from api.contexts_boundaries.city_events_bc.repositories import AbstractEventsRepository
+from api.contexts_boundaries.city_events_bc.services import AbstractEventsService
 
 # Nominative field captions for the inline follow-up widgets.
 _FIELD_LABELS = {
@@ -40,8 +41,8 @@ _CATEGORY_OPTIONS = [{"value": c.value, "label": c.value} for c in ReportCategor
 
 
 class ReportAgent(AbstractReportAgent):
-    def __init__(self, events_repository: AbstractEventsRepository) -> None:
-        self._events = events_repository
+    def __init__(self, events_service: AbstractEventsService) -> None:
+        self._events = events_service
 
     def plan_turn(
         self,
@@ -93,6 +94,6 @@ class ReportAgent(AbstractReportAgent):
             return []
         type_ = raw_type if isinstance(raw_type, EventType) else EventType(raw_type)
         category = raw_cat if isinstance(raw_cat, ReportCategory) else ReportCategory(raw_cat)
-        return self._events.list(
+        return self._events.list_events(
             status=EventStatus.ACTIVE, type_=type_, category=category, district=draft.get("district")
         )[:3]

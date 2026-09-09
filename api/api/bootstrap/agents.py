@@ -22,7 +22,7 @@ from api.ai.report_agent import AbstractReportAgent
 from api.ai.router_agent import AbstractRouterAgent
 from api.ai.search_agent import AbstractSearchAgent
 from api.config import Config
-from api.contexts_boundaries.city_events_bc.repositories import AbstractEventsRepository
+from api.contexts_boundaries.city_events_bc.services import AbstractEventsService
 
 
 def get_event_extractor(openai_client: OpenAIClient, config: Config) -> AbstractEventExtractor:
@@ -40,25 +40,28 @@ def get_router_agent(openai_client: OpenAIClient, config: Config) -> AbstractRou
     return current.agent_class(openai_client, model=current.model or config.openai.default_model_name)
 
 
-def get_search_agent(events_repository: AbstractEventsRepository) -> AbstractSearchAgent:
-    # Deterministic — depends only on the events repo (ranking, no model).
+def get_search_agent(events_service: AbstractEventsService) -> AbstractSearchAgent:
+    # Deterministic ranking (no model). Reads events through the city-events SERVICE,
+    # never its repository — the BC boundary the agents honour like any other caller.
     current = load_current("search_agent")
-    return current.agent_class(events_repository)
+    return current.agent_class(events_service)
 
 
-def get_report_agent(events_repository: AbstractEventsRepository) -> AbstractReportAgent:
-    # Deterministic — draft completion + dedup over the events repo (no model).
+def get_report_agent(events_service: AbstractEventsService) -> AbstractReportAgent:
+    # Deterministic draft completion + dedup (no model). Dedup lookups go through the
+    # city-events SERVICE, not its repository.
     current = load_current("report_agent")
-    return current.agent_class(events_repository)
+    return current.agent_class(events_service)
 
 
 def get_analytics_agent(
-    events_repository: AbstractEventsRepository, openai_client: OpenAIClient, config: Config
+    events_service: AbstractEventsService, openai_client: OpenAIClient, config: Config
 ) -> AbstractAnalyticsAgent:
-    # Deterministic count; the model (when keyed) only phrases the sentence.
+    # Deterministic count read through the city-events SERVICE; the model (when
+    # keyed) only phrases the sentence.
     current = load_current("analytics_agent")
     return current.agent_class(
-        events_repository, openai_client=openai_client, model=current.model or config.openai.default_model_name
+        events_service, openai_client=openai_client, model=current.model or config.openai.default_model_name
     )
 
 

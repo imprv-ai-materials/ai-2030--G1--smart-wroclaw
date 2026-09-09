@@ -154,15 +154,16 @@ class Bootstrap:
 
     @cached_property
     def search_agent(self) -> AbstractSearchAgent:
-        return get_search_agent(self.events_repository)
+        # Agents reach city-events data through the SERVICE, never the repository.
+        return get_search_agent(self.events_service)
 
     @cached_property
     def report_agent(self) -> AbstractReportAgent:
-        return get_report_agent(self.events_repository)
+        return get_report_agent(self.events_service)
 
     @cached_property
     def analytics_agent(self) -> AbstractAnalyticsAgent:
-        return get_analytics_agent(self.events_repository, self.openai_client, self.config)
+        return get_analytics_agent(self.events_service, self.openai_client, self.config)
 
     @cached_property
     def geo_resolver(self) -> AbstractGeoResolver:

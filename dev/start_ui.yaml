@@ -4,6 +4,16 @@ steps:
   - pypyr.steps.configvars
 
   - name: pypyr.steps.cmd
-    description: Starting Next.js UI on :3002
+    description: >
+      Clear the Next.js / Turbopack build cache before every start. A stale
+      .next — e.g. one carrying container-absolute `/workspaces/...` paths from
+      an earlier devcontainer build — makes Turbopack try to write to a
+      read-only/nonexistent path, panic, and crash-loop ("blinking"). It is
+      fully regenerated on boot, so removing it is always safe.
+    in:
+      cmd: rm -rf ui/.next
+
+  - name: pypyr.steps.cmd
+    description: Starting Next.js UI on :3100
     in:
       cmd: pnpm --dir ui dev

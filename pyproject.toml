@@ -3,6 +3,7 @@ name = "smart-wroclaw"
 version = "0.1.0"
 description = "Smart Wrocław — citizen assistant + issue reporting with a human-in-the-loop review for city maintenance."
 authors = ["Smart Wrocław Team <dev@smart-wroclaw.example>"]
+license = "PolyForm-Noncommercial-1.0.0"
 readme = "README.md"
 # Poetry is rooted at the project root (smart_wroclaw/); the importable package
 # `api` lives one level down at api/api, hence `from = "api"`.
@@ -91,6 +92,7 @@ annotate = { pipeline_name = "dev/annotate" }
 set_role = { pipeline_name = "dev/set_role" }
 precommit = { pipeline_name = "dev/precommit" }
 render_er = { pipeline_name = "dev/render_db_er_diagram" }
+er_explorer = { pipeline_name = "dev/er_explorer" }
 
 [tool.black]
 line-length = 120

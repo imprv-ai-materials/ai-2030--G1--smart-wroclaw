@@ -1,0 +1,833 @@
+{
+  "source": "docs/db_er.mmd",
+  "table_count": 8,
+  "relationship_count": 7,
+  "tables": [
+    {
+      "name": "agent_run_steps",
+      "columns": [
+        {
+          "name": "completion_tokens",
+          "type": "integer",
+          "keys": [],
+          "pk": false,
+          "fk": false,
+          "uk": false,
+          "comment": null
+        },
+        {
+          "name": "component",
+          "type": "text",
+          "keys": [],
+          "pk": false,
+          "fk": false,
+          "uk": false,
+          "comment": null
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp_with_time_zone",
+          "keys": [],
+          "pk": false,
+          "fk": false,
+          "uk": false,
+          "comment": null
+        },
+        {
+          "name": "finished_at",
+          "type": "timestamp_with_time_zone",
+          "keys": [],
+          "pk": false,
+          "fk": false,
+          "uk": false,
+          "comment": null
+        },
+        {
+          "name": "id",
+          "type": "bigint",
+          "keys": [
+            "PK"
+          ],
+          "pk": true,
+          "fk": false,
+          "uk": false,
+          "comment": null
+        },
+        {
+          "name": "input",
+          "type": "jsonb",
+          "keys": [],
+          "pk": false,
+          "fk": false,
+          "uk": false,
+          "comment": null
+        },
+        {
+          "name": "models",
+          "type": "jsonb",
+          "keys": [],
+          "pk": false,
+          "fk": false,
+          "uk": false,
+          "comment": null
+        },
+        {
+          "name": "output",
+          "type": "jsonb",
+          "keys": [],
+          "pk": false,
+          "fk": false,
+          "uk": false,
+          "comment": null
+        },
+        {
+          "name": "prompt_tokens",
+          "type": "integer",
+          "keys": [],
+          "pk": false,
+          "fk": false,
+          "uk": false,
+          "comment": null
+        },
+        {
+          "name": "run_id",
+          "type": "bigint",
+          "keys": [
+            "FK"
+          ],
+          "pk": false,
+          "fk": true,
+          "uk": false,
+          "comment": null
+        },
+        {
+          "name": "seq",
+          "type": "integer",
+          "keys": [],
+          "pk": false,
+          "fk": false,
+          "uk": false,
+          "comment": null
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "keys": [],
+          "pk": false,
+          "fk": false,
+          "uk": false,
+          "comment": null
+        }
+      ]
+    },
+    {
+      "name": "agent_runs",
+      "columns": [
+        {
+          "name": "completion_tokens",
+          "type": "integer",
+          "keys": [],
+          "pk": false,
+          "fk": false,
+          "uk": false,
+          "comment": null
+        },
+        {
+          "name": "conversation_id",
+          "type": "bigint",
+          "keys": [
+            "FK"
+          ],
+          "pk": false,
+          "fk": true,
+          "uk": false,
+          "comment": null
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp_with_time_zone",
+          "keys": [],
+          "pk": false,
+          "fk": false,
+          "uk": false,
+          "comment": null
+        },
+        {
+          "name": "error",
+          "type": "text",
+          "keys": [],
+          "pk": false,
+          "fk": false,
+          "uk": false,
+          "comment": null
+        },
+        {
+          "name": "finished_at",
+          "type": "timestamp_with_time_zone",
+          "keys": [],
+          "pk": false,
+          "fk": false,
+          "uk": false,
+          "comment": null
+        },
+        {
+          "name": "id",
+          "type": "bigint",
+          "keys": [
+            "PK"
+          ],
+          "pk": true,
+          "fk": false,
+          "uk": false,
+          "comment": null
+        },
+        {
+          "name": "intent",
+          "type": "text",
+          "keys": [],
+          "pk": false,
+          "fk": false,
+          "uk": false,
+          "comment": null
+        },
+        {
+          "name": "message_id",
+          "type": "bigint",
+          "keys": [
+            "FK"
+          ],
+          "pk": false,
+          "fk": true,
+          "uk": false,
+          "comment": null
+        },
+        {
+          "name": "prompt_tokens",
+          "type": "integer",
+          "keys": [],
+          "pk": false,
+          "fk": false,
+          "uk": false,
+          "comment": null
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "keys": [],
+          "pk": false,
+          "fk": false,
+          "uk": false,
+          "comment": null
+        }
+      ]
+    },
+    {
+      "name": "alembic_version",
+      "columns": [
+        {
+          "name": "version_num",
+          "type": "character_varying",
+          "keys": [
+            "PK"
+          ],
+          "pk": true,
+          "fk": false,
+          "uk": false,
+          "comment": null
+        }
+      ]
+    },
+    {
+      "name": "auth_tokens",
+      "columns": [
+        {
+          "name": "created_at",
+          "type": "timestamp_with_time_zone",
+          "keys": [],
+          "pk": false,
+          "fk": false,
+          "uk": false,
+          "comment": null
+        },
+        {
+          "name": "expires_at",
+          "type": "timestamp_with_time_zone",
+          "keys": [],
+          "pk": false,
+          "fk": false,
+          "uk": false,
+          "comment": null
+        },
+        {
+          "name": "id",
+          "type": "bigint",
+          "keys": [
+            "PK"
+          ],
+          "pk": true,
+          "fk": false,
+          "uk": false,
+          "comment": null
+        },
+        {
+          "name": "kind",
+          "type": "text",
+          "keys": [],
+          "pk": false,
+          "fk": false,
+          "uk": false,
+          "comment": null
+        },
+        {
+          "name": "token_hash",
+          "type": "text",
+          "keys": [
+            "UK"
+          ],
+          "pk": false,
+          "fk": false,
+          "uk": true,
+          "comment": null
+        },
+        {
+          "name": "used_at",
+          "type": "timestamp_with_time_zone",
+          "keys": [],
+          "pk": false,
+          "fk": false,
+          "uk": false,
+          "comment": null
+        },
+        {
+          "name": "user_id",
+          "type": "bigint",
+          "keys": [
+            "FK"
+          ],
+          "pk": false,
+          "fk": true,
+          "uk": false,
+          "comment": null
+        }
+      ]
+    },
+    {
+      "name": "chat_conversations",
+      "columns": [
+        {
+          "name": "created_at",
+          "type": "timestamp_with_time_zone",
+          "keys": [],
+          "pk": false,
+          "fk": false,
+          "uk": false,
+          "comment": null
+        },
+        {
+          "name": "id",
+          "type": "bigint",
+          "keys": [
+            "PK"
+          ],
+          "pk": true,
+          "fk": false,
+          "uk": false,
+          "comment": null
+        },
+        {
+          "name": "title",
+          "type": "text",
+          "keys": [],
+          "pk": false,
+          "fk": false,
+          "uk": false,
+          "comment": null
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp_with_time_zone",
+          "keys": [],
+          "pk": false,
+          "fk": false,
+          "uk": false,
+          "comment": null
+        },
+        {
+          "name": "user_id",
+          "type": "bigint",
+          "keys": [
+            "FK"
+          ],
+          "pk": false,
+          "fk": true,
+          "uk": false,
+          "comment": null
+        }
+      ]
+    },
+    {
+      "name": "chat_messages",
+      "columns": [
+        {
+          "name": "content",
+          "type": "text",
+          "keys": [],
+          "pk": false,
+          "fk": false,
+          "uk": false,
+          "comment": null
+        },
+        {
+          "name": "conversation_id",
+          "type": "bigint",
+          "keys": [
+            "FK"
+          ],
+          "pk": false,
+          "fk": true,
+          "uk": false,
+          "comment": null
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp_with_time_zone",
+          "keys": [],
+          "pk": false,
+          "fk": false,
+          "uk": false,
+          "comment": null
+        },
+        {
+          "name": "data",
+          "type": "jsonb",
+          "keys": [],
+          "pk": false,
+          "fk": false,
+          "uk": false,
+          "comment": null
+        },
+        {
+          "name": "id",
+          "type": "bigint",
+          "keys": [
+            "PK"
+          ],
+          "pk": true,
+          "fk": false,
+          "uk": false,
+          "comment": null
+        },
+        {
+          "name": "role",
+          "type": "text",
+          "keys": [],
+          "pk": false,
+          "fk": false,
+          "uk": false,
+          "comment": null
+        }
+      ]
+    },
+    {
+      "name": "city_events",
+      "columns": [
+        {
+          "name": "address",
+          "type": "text",
+          "keys": [],
+          "pk": false,
+          "fk": false,
+          "uk": false,
+          "comment": null
+        },
+        {
+          "name": "category",
+          "type": "text",
+          "keys": [],
+          "pk": false,
+          "fk": false,
+          "uk": false,
+          "comment": null
+        },
+        {
+          "name": "confirmations",
+          "type": "integer",
+          "keys": [],
+          "pk": false,
+          "fk": false,
+          "uk": false,
+          "comment": null
+        },
+        {
+          "name": "contact_phone",
+          "type": "text",
+          "keys": [],
+          "pk": false,
+          "fk": false,
+          "uk": false,
+          "comment": null
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp_with_time_zone",
+          "keys": [],
+          "pk": false,
+          "fk": false,
+          "uk": false,
+          "comment": null
+        },
+        {
+          "name": "description",
+          "type": "text",
+          "keys": [],
+          "pk": false,
+          "fk": false,
+          "uk": false,
+          "comment": null
+        },
+        {
+          "name": "details",
+          "type": "jsonb",
+          "keys": [],
+          "pk": false,
+          "fk": false,
+          "uk": false,
+          "comment": null
+        },
+        {
+          "name": "district",
+          "type": "text",
+          "keys": [],
+          "pk": false,
+          "fk": false,
+          "uk": false,
+          "comment": null
+        },
+        {
+          "name": "ends_at",
+          "type": "timestamp_with_time_zone",
+          "keys": [],
+          "pk": false,
+          "fk": false,
+          "uk": false,
+          "comment": null
+        },
+        {
+          "name": "expires_at",
+          "type": "timestamp_with_time_zone",
+          "keys": [],
+          "pk": false,
+          "fk": false,
+          "uk": false,
+          "comment": null
+        },
+        {
+          "name": "id",
+          "type": "bigint",
+          "keys": [
+            "PK"
+          ],
+          "pk": true,
+          "fk": false,
+          "uk": false,
+          "comment": null
+        },
+        {
+          "name": "image_url",
+          "type": "text",
+          "keys": [],
+          "pk": false,
+          "fk": false,
+          "uk": false,
+          "comment": null
+        },
+        {
+          "name": "lat",
+          "type": "double_precision",
+          "keys": [],
+          "pk": false,
+          "fk": false,
+          "uk": false,
+          "comment": null
+        },
+        {
+          "name": "lng",
+          "type": "double_precision",
+          "keys": [],
+          "pk": false,
+          "fk": false,
+          "uk": false,
+          "comment": null
+        },
+        {
+          "name": "location_text",
+          "type": "text",
+          "keys": [],
+          "pk": false,
+          "fk": false,
+          "uk": false,
+          "comment": null
+        },
+        {
+          "name": "reporter_id",
+          "type": "bigint",
+          "keys": [
+            "FK"
+          ],
+          "pk": false,
+          "fk": true,
+          "uk": false,
+          "comment": null
+        },
+        {
+          "name": "resolved_at",
+          "type": "timestamp_with_time_zone",
+          "keys": [],
+          "pk": false,
+          "fk": false,
+          "uk": false,
+          "comment": null
+        },
+        {
+          "name": "severity",
+          "type": "text",
+          "keys": [],
+          "pk": false,
+          "fk": false,
+          "uk": false,
+          "comment": null
+        },
+        {
+          "name": "source",
+          "type": "text",
+          "keys": [],
+          "pk": false,
+          "fk": false,
+          "uk": false,
+          "comment": null
+        },
+        {
+          "name": "starts_at",
+          "type": "timestamp_with_time_zone",
+          "keys": [],
+          "pk": false,
+          "fk": false,
+          "uk": false,
+          "comment": null
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "keys": [],
+          "pk": false,
+          "fk": false,
+          "uk": false,
+          "comment": null
+        },
+        {
+          "name": "subtype",
+          "type": "text",
+          "keys": [],
+          "pk": false,
+          "fk": false,
+          "uk": false,
+          "comment": null
+        },
+        {
+          "name": "title",
+          "type": "text",
+          "keys": [],
+          "pk": false,
+          "fk": false,
+          "uk": false,
+          "comment": null
+        },
+        {
+          "name": "type",
+          "type": "text",
+          "keys": [],
+          "pk": false,
+          "fk": false,
+          "uk": false,
+          "comment": null
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp_with_time_zone",
+          "keys": [],
+          "pk": false,
+          "fk": false,
+          "uk": false,
+          "comment": null
+        },
+        {
+          "name": "verified",
+          "type": "boolean",
+          "keys": [],
+          "pk": false,
+          "fk": false,
+          "uk": false,
+          "comment": null
+        }
+      ]
+    },
+    {
+      "name": "users",
+      "columns": [
+        {
+          "name": "created_at",
+          "type": "timestamp_with_time_zone",
+          "keys": [],
+          "pk": false,
+          "fk": false,
+          "uk": false,
+          "comment": null
+        },
+        {
+          "name": "email",
+          "type": "text",
+          "keys": [],
+          "pk": false,
+          "fk": false,
+          "uk": false,
+          "comment": null
+        },
+        {
+          "name": "email_confirmed",
+          "type": "boolean",
+          "keys": [],
+          "pk": false,
+          "fk": false,
+          "uk": false,
+          "comment": null
+        },
+        {
+          "name": "id",
+          "type": "bigint",
+          "keys": [
+            "PK"
+          ],
+          "pk": true,
+          "fk": false,
+          "uk": false,
+          "comment": null
+        },
+        {
+          "name": "password_hash",
+          "type": "text",
+          "keys": [],
+          "pk": false,
+          "fk": false,
+          "uk": false,
+          "comment": null
+        },
+        {
+          "name": "phone",
+          "type": "text",
+          "keys": [],
+          "pk": false,
+          "fk": false,
+          "uk": false,
+          "comment": null
+        },
+        {
+          "name": "role",
+          "type": "text",
+          "keys": [],
+          "pk": false,
+          "fk": false,
+          "uk": false,
+          "comment": null
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp_with_time_zone",
+          "keys": [],
+          "pk": false,
+          "fk": false,
+          "uk": false,
+          "comment": null
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "from": "agent_run_steps",
+      "to": "agent_runs",
+      "key": "run_id",
+      "label": "run_id",
+      "cardinality": "}o--||",
+      "left": "}o",
+      "right": "||",
+      "line": "solid",
+      "constraint": true
+    },
+    {
+      "from": "agent_runs",
+      "to": "chat_conversations",
+      "key": "conversation_id",
+      "label": "conversation_id",
+      "cardinality": "}o--||",
+      "left": "}o",
+      "right": "||",
+      "line": "solid",
+      "constraint": true
+    },
+    {
+      "from": "agent_runs",
+      "to": "chat_messages",
+      "key": "message_id",
+      "label": "message_id",
+      "cardinality": "}o--||",
+      "left": "}o",
+      "right": "||",
+      "line": "solid",
+      "constraint": true
+    },
+    {
+      "from": "auth_tokens",
+      "to": "users",
+      "key": "user_id",
+      "label": "user_id",
+      "cardinality": "}o--||",
+      "left": "}o",
+      "right": "||",
+      "line": "solid",
+      "constraint": true
+    },
+    {
+      "from": "chat_conversations",
+      "to": "users",
+      "key": "user_id",
+      "label": "user_id",
+      "cardinality": "}o--||",
+      "left": "}o",
+      "right": "||",
+      "line": "solid",
+      "constraint": true
+    },
+    {
+      "from": "chat_messages",
+      "to": "chat_conversations",
+      "key": "conversation_id",
+      "label": "conversation_id",
+      "cardinality": "}o--||",
+      "left": "}o",
+      "right": "||",
+      "line": "solid",
+      "constraint": true
+    },
+    {
+      "from": "city_events",
+      "to": "users",
+      "key": "reporter_id",
+      "label": "reporter_id",
+      "cardinality": "}o--||",
+      "left": "}o",
+      "right": "||",
+      "line": "solid",
+      "constraint": true
+    }
+  ]
+}

@@ -6,7 +6,8 @@ steps:
   - name: pypyr.steps.default
     description: >
       output basename for the generated files (override with
-      `pypyr render_er out=docs/schema`). Produces {{out}}.mmd and {{out}}.svg.
+      `pypyr render_er out=docs/schema`). Produces {{out}}.mmd, {{out}}.er.json
+      (for the interactive `.er_explorer` tool) and {{out}}.svg.
     in:
       defaults:
         out: docs/db_er
@@ -38,7 +39,16 @@ steps:
       cmd: poetry run python dev/add_non_constraint_relationship.py {out}.mmd
 
   - name: pypyr.steps.cmd
-    description: Render the Mermaid diagram to SVG ({out}.svg).
+    description: >
+      Emit the structured {out}.er.json the interactive `.er_explorer` tool
+      consumes (tables + columns with PK/FK/UK flags + relationships with
+      cardinality and a constraint flag). Explore it with
+      `pypyr er_explorer` (or `python .er_explorer/explore.py {out}.er.json`).
+    in:
+      cmd: poetry run python dev/er_diagram.py {out}.mmd {out}.er.json
+
+  - name: pypyr.steps.cmd
+    description: Render the Mermaid diagram to a static SVG ({out}.svg).
     in:
       cmd: mmdc -i {out}.mmd -o {out}.svg
 

@@ -59,6 +59,31 @@ api/api/ai/<agent>/
   full run to decide. Offline (each agent's keyword baseline) is the default and the
   floor you must beat; `llm=1` is the ceiling.
 
+### The boundary rule: an agent reads bounded-context data through the SERVICE
+
+Some agents need data owned by a bounded context — `search_agent`, `analytics_agent`
+and `report_agent` all read `city_events`. They do so **only through that BC's
+service** (`EventsService`), **never its repository or raw SQL**. The service is the
+boundary: it owns the domain read rules (the expiry drop, the free-text `q` pass, the
+`types` candidate-set facet), so an agent calls `events_service.list_events(...)` and
+never re-implements those rules. The composition roots enforce this — production
+(`api/api/bootstrap/agents.py`) and the eval harness (`api/api/ai/_eval/harness.py`)
+both inject the **service**, the eval wrapping even its corpus-backed in-memory repo
+in a real `EventsService` so the offline score exercises the true production read path.
+
+The same rule governs every cross-context call: when one BC (or the chat orchestrator)
+touches another's data it goes through that BC's service — `chat_bc`'s durable turn
+creates events via `events_service.create_event(...)`, not the repository. So when a
+change here needs bounded-context data:
+
+- **Inject the service, not the repository.** A new (or forked) agent that reads a BC
+  takes `Abstract<X>Service` in its constructor. Update BOTH composition roots
+  (`bootstrap/agents.py` and `_eval/harness.py`) to pass the service.
+- **Missing a read? Extend the service, don't reach past it.** If `list_events` (or
+  the relevant service method) doesn't expose the filter/shape you need, add it to the
+  **service** — that keeps each domain rule (expiry, etc.) in exactly one home instead
+  of duplicated inside an agent.
+
 ## Measuring — the only source of truth
 
 ```bash
@@ -203,6 +228,12 @@ Only after they answer do you touch `versions/`.
 - **Never edit the eval scorer / gold to move a number.** Fix the agent.
 - **The goal decides.** Keep only changes that meet their stated bar (bug fixed, or
   quality within tolerance at the target cost); revert the rest.
+- **Read bounded-context data through services, never repositories.** An agent that
+  needs a BC's data (e.g. `search`/`analytics`/`report` over `city_events`) depends on
+  that BC's **service** — never its repository or raw SQL. Domain read rules (expiry,
+  filters) live in the service; don't duplicate them in the agent. Need a read the
+  service lacks? Add it to the service, and wire the service through BOTH composition
+  roots (`bootstrap/agents.py` and `ai/_eval/harness.py`).
 - **Don't break `base.py`.** The domain depends on the contract, not your version.
 - **Record every run** — the eval CLI does this automatically (`eval_runs.jsonl`);
   cite the before/after numbers when you report the outcome.

@@ -91,11 +91,16 @@ class AbstractEventsService(abc.ABC):
         self,
         status: EventStatus | None = None,
         type_: EventType | None = None,
+        types: list[EventType] | None = None,
         category: ReportCategory | None = None,
         district: str | None = None,
         severity: Severity | None = None,
         q: str | None = None,
-    ) -> list[CityEvent]: ...
+    ) -> list[CityEvent]:
+        """The one public read for city events — the map feed AND every agent that
+        needs them (search / analytics / report). `type_` is the single-type map
+        facet; `types` is a candidate SET (the extractor's primary ∪ secondary reads).
+        Expired events are dropped here (the one home of that rule)."""
 
     @abc.abstractmethod
     def get_event(self, event_id: int) -> CityEvent: ...
@@ -157,6 +162,7 @@ class EventsService(AbstractEventsService):
         self,
         status: EventStatus | None = None,
         type_: EventType | None = None,
+        types: list[EventType] | None = None,
         category: ReportCategory | None = None,
         district: str | None = None,
         severity: Severity | None = None,
@@ -165,18 +171,12 @@ class EventsService(AbstractEventsService):
         events = self._events.list(
             status=status,
             type_=type_,
+            types=types,
             category=category,
             district=district,
             severity=severity,
         )
-        # Drop events whose 24h (or explicitly-set) window has passed — they stay
-        # in the DB (an author can still open + prolong one via `get_event`) but
-        # fall off the public feed. Events with no `expires_at` (city/seed) never
-        # time out. Applied in-process alongside the free-text filter below since
-        # the feed is a bounded set and the criteria layer can't express the
-        # "expires_at IS NULL OR expires_at > now" OR.
-        now = _utcnow()
-        events = [e for e in events if e.expires_at is None or e.expires_at > now]
+        events = self._drop_expired(events)
         # Free-text search is applied in-process (the feed is a bounded set) so a
         # single query can span title/description/location without an OR-capable
         # criteria layer.
@@ -184,6 +184,17 @@ class EventsService(AbstractEventsService):
         if needle:
             events = [e for e in events if needle in self._haystack(e)]
         return events
+
+    @staticmethod
+    def _drop_expired(events: list[CityEvent]) -> list[CityEvent]:
+        """The one home of the "has it fallen off the feed?" rule. An event whose
+        24h (or explicitly-set) window has passed stays in the DB — the author can
+        still open + `prolong_event` it — but drops off every read (feed and the
+        agents that read through `list_events`). Events with no `expires_at`
+        (city / seed) never time out. Applied in-process since the feed is a bounded
+        set and the criteria layer can't express "expires_at IS NULL OR > now"."""
+        now = _utcnow()
+        return [e for e in events if e.expires_at is None or e.expires_at > now]
 
     @staticmethod
     def _haystack(event: CityEvent) -> str:

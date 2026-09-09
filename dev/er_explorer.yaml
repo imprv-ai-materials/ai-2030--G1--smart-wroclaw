@@ -1,0 +1,36 @@
+# `pypyr er_explorer` — open the interactive ER-diagram explorer.
+#
+#   pypyr er_explorer                       # docs/db_er.er.json (default)
+#   pypyr er_explorer diagram=docs/db_er.mmd
+#   pypyr er_explorer diagram=docs/schema.er.json port=7911
+#
+# Serves a small single-page app on http://127.0.0.1:{port} to pan / zoom /
+# filter / inspect the schema. Read-only, stdlib only (the drawing libraries are
+# vendored under .er_explorer/static/vendor). Ctrl+C to stop.
+#
+# The default input is the .er.json produced by `pypyr render_er` — run that
+# first if docs/db_er.er.json is missing (needs Postgres up).
+context_parser: pypyr.parser.keyvaluepairs
+steps:
+  - pypyr.steps.debug
+  - pypyr.steps.configvars
+
+  - name: pypyr.steps.default
+    description: default values for optional inputs
+    in:
+      defaults:
+        diagram: ''
+        port: '7910'
+
+  - name: pypyr.steps.cmd
+    description: Open the ER explorer for the chosen diagram file.
+    in:
+      cmd: poetry run python .er_explorer/explore.py {diagram} --port {port}
+
+on_failure:
+  - name: pypyr.steps.echo
+    in:
+      echoMe: >
+        Could not open the ER explorer. If docs/db_er.er.json is missing, run
+        `pypyr render_er` first (needs Postgres). Usage:
+        pypyr er_explorer [diagram=<path.er.json|.mmd>] [port=7910]

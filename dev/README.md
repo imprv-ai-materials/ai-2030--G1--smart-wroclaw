@@ -23,6 +23,8 @@ pipeline here (`pipeline_name = "dev/<name>"`).
 | `pypyr lint`           | `flake8` over `api/api` |
 | `pypyr test`           | `pytest` with coverage (`pypyr test tests=./tests/x.py` to scope) |
 | `pypyr precommit`      | run all pre-commit hooks |
+| `pypyr render_er`      | dump the public schema → `docs/db_er.{mmd,er.json,svg}` (needs Postgres + `mermerd`/`mmdc`) |
+| `pypyr er_explorer`    | open the interactive ER-diagram viewer (pan/zoom/filter) — see [`/.er_explorer`](../.er_explorer) |
 
 Shared variables (line length, dirs, the Inngest dev-server URL) live under
 `[tool.pypyr.vars]` in `pyproject.toml` and are interpolated as `{name}`.

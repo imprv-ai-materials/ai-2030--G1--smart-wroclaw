@@ -106,3 +106,22 @@ smart_wroclaw/            ← katalog główny: Poetry (pyproject.toml, poetry.l
 Architektura odwzorowuje siostrzane usługi `imprv-ai-service` / `imprv-api`:
 konteksty ograniczone (bounded contexts), warstwowe repozytoria/serwisy, `DBClient`
 oparty o pypika, rozdział API/worker oraz Inngest do zadań w tle.
+
+## Licencja
+
+Smart Wrocław jest udostępniany na zasadzie **source-available** na licencji
+[PolyForm Noncommercial License 1.0.0](LICENSE).
+
+- ✅ Możesz **używać, uruchamiać, analizować, modyfikować i udostępniać**
+  projekt — wraz z własnymi zmianami — do dowolnych celów **niekomercyjnych**,
+  bezpłatnie.
+- ⛔ **Użycie komercyjne jest niedozwolone** na warunkach tej licencji — w całości
+  ani w części.
+- 🤝 **Użycie komercyjne** jest możliwe **wyłącznie za uprzednią pisemną zgodą**
+  autorów oraz firmy **Improved AI**. Aby uzyskać licencję komercyjną, skontaktuj
+  się z Improved AI pod adresem [imprv.ai](https://imprv.ai).
+
+Pełną treść warunków znajdziesz w pliku [`LICENSE`](LICENSE) (w języku angielskim,
+wersja wiążąca).
+
+Required Notice: Copyright Improved AI (https://imprv.ai)

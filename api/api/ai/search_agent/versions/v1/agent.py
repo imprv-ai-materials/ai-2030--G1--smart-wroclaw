@@ -1,9 +1,11 @@
-"""search_agent · v1 — deterministic baseline ranking over an events repository.
+"""search_agent · v1 — deterministic baseline ranking over the city-events service.
 
 This isolates today's search behaviour behind an agent boundary so it owns its own
 eval and becomes the single place the ranking fix lands. It reproduces the baseline
-the `main_agent` IR loop scores: project the reading onto filters, fetch from the
-repo, drop expired, apply the free-text `q` substring, order newest first.
+the `main_agent` IR loop scores: project the reading onto filters, fetch through the
+`EventsService` (which drops expired), apply the free-text `q` substring, order
+newest first. The agent reads events only through the SERVICE — never a repository —
+so it honours the city-events BC boundary like any other caller.
 
 A `scope` from the geo_resolver narrows it further — a district name backfills the
 facet, and a `{lat,lng,radius_m}` point keeps only events within that radius (the
@@ -17,7 +19,6 @@ The two known weaknesses live here ON PURPOSE (the eval proves them; a v2 fixes 
 from __future__ import annotations
 
 import math
-from datetime import datetime, timezone
 from typing import Any
 
 from api.ai.search_agent.base import AbstractSearchAgent
@@ -27,11 +28,7 @@ from api.contexts_boundaries.city_events_bc.models import (
     EventUnderstanding,
     to_search_filters,
 )
-from api.contexts_boundaries.city_events_bc.repositories import AbstractEventsRepository
-
-
-def _utcnow() -> datetime:
-    return datetime.now(tz=timezone.utc)
+from api.contexts_boundaries.city_events_bc.services import AbstractEventsService
 
 
 def _haversine_m(lat1: float, lng1: float, lat2: float, lng2: float) -> float:
@@ -43,8 +40,8 @@ def _haversine_m(lat1: float, lng1: float, lat2: float, lng2: float) -> float:
 
 
 class SearchAgent(AbstractSearchAgent):
-    def __init__(self, events_repository: AbstractEventsRepository) -> None:
-        self._events = events_repository
+    def __init__(self, events_service: AbstractEventsService) -> None:
+        self._events = events_service
 
     def search(
         self,
@@ -58,15 +55,13 @@ class SearchAgent(AbstractSearchAgent):
         # A resolved district backfills the facet when the reading didn't carry one
         # (e.g. the extractor missed "na Krzykach" but the geo_resolver caught it).
         district = filters["district"] or (scope or {}).get("district")
-        events = self._events.list(
+        # Through the SERVICE — it applies the expiry drop, so nothing to repeat here.
+        events = self._events.list_events(
             status=status,
             types=filters.get("types"),  # a candidate SET, not a single type
             category=filters["category"],
             district=district,
         )
-        # Expired events stay in the DB but fall off the feed (None = never expires).
-        now = _utcnow()
-        events = [e for e in events if e.expires_at is None or e.expires_at > now]
         # Free-text `q` is a substring pass — only present when nothing structured
         # matched (see to_search_filters). TODO(v2): keep it as a ranking signal.
         needle = (filters.get("q") or "").strip().lower()
