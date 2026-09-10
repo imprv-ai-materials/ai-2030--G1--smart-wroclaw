@@ -112,3 +112,114 @@ python .annotator/annotate.py \
   in `devcontainer.json`, or run podman with `--userns=keep-id`.
 - **Rebuild** after changing anything under `.devcontainer/`: *Dev Containers:
   Rebuild Container*.
+
+## Windows hosts: "An error occurred setting up the container"
+
+VS Code shows that one-line dialog for *any* failure. The real error is in
+**Terminal → Dev Containers**, on the first red line *above*
+`Error: Command failed: docker compose … up -d app db inngest` — or, in full, in
+the log that *Dev Containers: Show Container Log* opens
+(`%APPDATA%\Code\logs\<timestamp>\window1\exthost\ms-vscode-remote.remote-containers\`).
+
+Two distinct things cause it. They fail at different stages, so the log tells
+you which one you have.
+
+### 1. WSLg Wayland socket + Docker Desktop WSL integration (confirmed in the wild)
+
+**Symptom** — the image *builds fine*, then `compose up` dies instantly while
+creating the containers:
+
+```
+[+] up 1/3
+ ✘ service "app" Error response from daemon: accessing specified distro mount service:
+   stat /run/guest-services/distro-services/<distro>.sock: no such file or directory
+```
+
+**Cause** — when `WAYLAND_DISPLAY` is set in WSL, the Dev Containers extension
+mounts WSLg's Wayland socket into the container so Linux GUI apps can draw on the
+Windows desktop. It does that through a UNC path, which you can see in the
+compose override it generates:
+
+```yaml
+volumes:
+  - vscode:/vscode
+  - \\wsl.localhost\Ubuntu-24.04\mnt\wslg\runtime-dir\wayland-0:/tmp/vscode-wayland-<uuid>.sock
+```
+
+Only the Docker Desktop daemon can resolve `\\wsl.localhost\<distro>\…`, and only
+for distros where **WSL integration is turned on**. If that distro is off in
+Docker Desktop's list (a freshly created or renamed distro defaults to off), the
+daemon can't reach its mount service and refuses to create the container. Note
+this bites even when the clone lives on `C:\` and you never open a WSL shell —
+the extension probes the default distro regardless.
+See [vscode-remote-release#11402](https://github.com/microsoft/vscode-remote-release/issues/11402),
+[#9293](https://github.com/microsoft/vscode-remote-release/issues/9293),
+[#8172](https://github.com/microsoft/vscode-remote-release/issues/8172).
+
+**Fix A — enable the integration** (do this if you use WSL at all):
+*Docker Desktop → Settings → Resources → WSL integration* → enable the distro
+named in the error, **Apply & restart**, then *Dev Containers: Reopen in
+Container*.
+
+**Fix B — stop the mount being generated** (do this if you don't need Linux GUI
+apps in the container; it is the more reliable of the two). In **host** VS Code,
+*Preferences: Open User Settings (JSON)*, add:
+
+```jsonc
+"dev.containers.mountWaylandSocket": false
+```
+
+then reload the window and reopen in the container. Nothing here needs WSLg, so
+Fix B costs you nothing. Verified against extension `ms-vscode-remote.remote-
+containers` 0.469.0: *"Controls whether a Wayland socket, if one exists, should
+be mounted into the Dev Container"*, default `true`, **scope `application`**.
+`dev.containers.forwardWSLServices: false` is the bigger hammer — it turns off
+SSH agent / GPG agent / X / Wayland forwarding from WSL all at once.
+
+That `application` scope is why this fix cannot be committed to the repo: an
+application-scoped setting is only honoured in *user* settings, so neither
+`.vscode/settings.json` nor `customizations.vscode.settings` in
+`devcontainer.json` can set it (and the latter applies inside the container
+anyway — far too late to change the compose command). Each Windows developer has
+to add it once, per machine.
+
+### 2. CRLF line endings
+
+**Symptom** — the stack comes up, then the `app` container exits immediately, or
+`postCreateCommand` fails:
+
+```
+/usr/bin/env: 'bash\r': No such file or directory
+exec /usr/local/bin/devcontainer-entrypoint.sh: no such file or directory
+```
+
+**Cause** — Git for Windows checks out with `core.autocrlf=true` by default,
+rewriting `entrypoint.sh` to CRLF. That file is the `app` service's ENTRYPOINT,
+so Linux looks for an interpreter literally named `bash\r`.
+
+The repo now pins LF via `.gitattributes`, and the image + `postCreateCommand`
+strip CR defensively — but an *existing* Windows clone still has CRLF on disk.
+Check before touching anything:
+
+```powershell
+if ((Get-Content -Raw .devcontainer\entrypoint.sh) -match "`r`n") { "CRLF - this is it" } else { "LF - look elsewhere" }
+```
+
+Fix it once, on the host — **commit or stash first, `reset --hard` discards
+uncommitted work**:
+
+```powershell
+git config core.autocrlf false
+git rm --cached -r .
+git reset --hard
+```
+
+then *Dev Containers: **Rebuild** Container* — not just "Reopen", since a broken
+entrypoint is baked into the cached image.
+
+### Unrelated but worth knowing
+
+The bind mount is much faster if the clone lives inside the WSL filesystem
+(`\\wsl.localhost\Ubuntu\home\<you>\…`) and you open it with the WSL extension
+before reopening in the container. If you go that route you need Fix A above
+anyway, since Docker Desktop must have integration enabled for that distro.

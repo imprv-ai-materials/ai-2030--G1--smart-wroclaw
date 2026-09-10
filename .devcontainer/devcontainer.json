@@ -22,7 +22,12 @@
     "5432": { "label": "Postgres" }
   },
 
-  "postCreateCommand": "bash .devcontainer/postCreate.sh",
+  // The `sed` strips CR from the script before running it: on a Windows host
+  // Git may have checked the repo out with CRLF endings (core.autocrlf=true),
+  // and bash then chokes on `set -euo pipefail\r`. .gitattributes pins LF for
+  // fresh checkouts; this keeps an older Windows clone working too. Harmless
+  // no-op on macOS/Linux.
+  "postCreateCommand": "sed -i 's/\\r$//' .devcontainer/postCreate.sh && bash .devcontainer/postCreate.sh",
 
   "customizations": {
     "vscode": {

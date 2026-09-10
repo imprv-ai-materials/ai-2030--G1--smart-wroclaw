@@ -1,0 +1,35 @@
+# Line endings. Git for Windows checks out with core.autocrlf=true by default,
+# which rewrites LF → CRLF in the working tree. That is harmless for files the
+# host reads, but FATAL for the shell scripts that run inside the Linux
+# devcontainer: `.devcontainer/entrypoint.sh` is COPYed into the image and used
+# as the `app` service's ENTRYPOINT, so a CRLF copy makes the kernel look for an
+# interpreter literally named `bash\r` and the container dies on start with
+#   exec /usr/local/bin/devcontainer-entrypoint.sh: no such file or directory
+# which surfaces in VS Code only as "An error occurred setting up the container"
+# after `docker compose ... up -d app db inngest` exits 1.
+#
+# Pin every text file to LF in the working tree on ALL hosts. Windows editors
+# (VS Code included) handle LF fine; the container requires it.
+* text=auto eol=lf
+
+# Belt and braces for the files that must be LF or the container won't boot.
+*.sh text eol=lf
+Dockerfile text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+
+# Vendored third-party bundles: keep byte-identical (layout-base.js has mixed
+# endings upstream), so `text=auto` above never renormalizes them.
+.er_explorer/static/vendor/** -text
+
+# Never touch binaries.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.pdf binary
+*.woff binary
+*.woff2 binary
+*.ttf binary

@@ -42,7 +42,14 @@ RUN echo "alias penv='source /workspaces/smart_wroclaw/.venv/bin/activate'" >> /
 # owner on Linux hosts (compose devcontainers don't get VS Code's automatic
 # updateRemoteUserUID). Wired up as `entrypoint:` in compose.yaml.
 COPY entrypoint.sh /usr/local/bin/devcontainer-entrypoint.sh
-RUN chmod +x /usr/local/bin/devcontainer-entrypoint.sh
+# Strip CR before chmod: a Windows checkout with core.autocrlf=true (Git for
+# Windows' default) delivers this file with CRLF endings, and the kernel then
+# reads the shebang as `/usr/bin/env bash\r` — the container exits immediately
+# with "exec /usr/local/bin/devcontainer-entrypoint.sh: no such file or
+# directory" and `docker compose up` fails. .gitattributes pins LF for fresh
+# checkouts; this makes the image correct even for a tree cloned before it.
+RUN sed -i 's/\r$//' /usr/local/bin/devcontainer-entrypoint.sh \
+ && chmod +x /usr/local/bin/devcontainer-entrypoint.sh
 
 # Poetry in its own isolated venv (pinned), then put it on PATH for every user.
 RUN python3 -m venv "${POETRY_HOME}" \
