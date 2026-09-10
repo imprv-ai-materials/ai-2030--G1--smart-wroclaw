@@ -100,5 +100,15 @@ python .annotator/annotate.py \
   triage agents use their offline fallbacks and the whole stack is exercisable
   with no key and no cost. Add `CONFIG__OPENAI__API_KEY=…` to `api/.env` to use a
   real model.
+- **Linux hosts with uid ≠ 1000:** VS Code's automatic uid remap
+  (`updateRemoteUserUID`) does not apply to compose-based devcontainers, so
+  `entrypoint.sh` does it instead: on start it remaps the `vscode` user to the
+  owner of the bind-mounted workspace when that user can't write to it. Without
+  this, `postCreate.sh` dies with `[Errno 13] Permission denied: PosixPath('…/.venv')`
+  (poetry can't recreate the venv mount point) and file saves fail with EACCES.
+  On macOS / Windows the mount is writable by any uid, so it's a no-op.
+- **Rootless Docker / Podman:** the host user appears as root inside the
+  container and `vscode` can't be remapped onto it. Set `"remoteUser": "root"`
+  in `devcontainer.json`, or run podman with `--userns=keep-id`.
 - **Rebuild** after changing anything under `.devcontainer/`: *Dev Containers:
   Rebuild Container*.

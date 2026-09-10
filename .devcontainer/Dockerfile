@@ -38,6 +38,12 @@ RUN npm install -g @anthropic-ai/claude-code
 # the dev deps (pytest, black, mypy, …) resolve once you've run `penv`.
 RUN echo "alias penv='source /workspaces/smart_wroclaw/.venv/bin/activate'" >> /home/vscode/.bashrc
 
+# Entrypoint that aligns the `vscode` uid/gid with the bind-mounted workspace
+# owner on Linux hosts (compose devcontainers don't get VS Code's automatic
+# updateRemoteUserUID). Wired up as `entrypoint:` in compose.yaml.
+COPY entrypoint.sh /usr/local/bin/devcontainer-entrypoint.sh
+RUN chmod +x /usr/local/bin/devcontainer-entrypoint.sh
+
 # Poetry in its own isolated venv (pinned), then put it on PATH for every user.
 RUN python3 -m venv "${POETRY_HOME}" \
  && "${POETRY_HOME}/bin/pip" install --no-cache-dir "poetry==${POETRY_VERSION}"

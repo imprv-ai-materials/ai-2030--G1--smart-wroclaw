@@ -22,6 +22,10 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    # The entrypoint (runs as root) remaps `vscode` to the workspace owner's
+    # uid/gid when a Linux host's uid isn't 1000, then execs `sleep infinity`.
+    # See entrypoint.sh. No-op on macOS / Windows.
+    entrypoint: ["/usr/local/bin/devcontainer-entrypoint.sh"]
     command: sleep infinity
     volumes:
       - ..:/workspaces/smart_wroclaw:cached

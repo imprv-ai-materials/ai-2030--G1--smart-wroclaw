@@ -6,12 +6,38 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."   # → smart_wroclaw project root
 
+# The workspace is a bind mount. If the container user can't write to it, nothing
+# below can work (and the editor can't save files either). Normally entrypoint.sh
+# has already remapped `vscode` to the host uid; this is the loud fallback.
+if [ ! -w . ]; then
+  cat >&2 <<MSG
+✗ $(pwd) is not writable by $(id -un) (uid $(id -u)); it is owned by uid $(stat -c %u .).
+  The container user must match the owner of the bind-mounted source tree.
+  • Linux host: the entrypoint should have remapped the user — rebuild the
+    container (Dev Containers: Rebuild Container) so the new image is used.
+  • Rootless Docker / Podman: set "remoteUser": "root" in devcontainer.json,
+    or run podman with --userns=keep-id.
+MSG
+  exit 1
+fi
+
 echo "▸ Taking ownership of the named-volume mount points (.venv, ui/node_modules, ui/.next)…"
 # The volumes mount empty + root-owned; hand them to the current (vscode) user so
 # poetry / pnpm / next can write into them. ui/.next MUST be here too — it's a
 # named volume (see compose.yaml) that shadows the bind mount, so next dev can't
 # mkdir .next/dev under it until vscode owns it ("EACCES: mkdir …/ui/.next/dev").
-sudo chown -R "$(id -u):$(id -g)" .venv ui/node_modules ui/.next 2>/dev/null || true
+# Not silenced on purpose: if this fails, everything after it fails less clearly.
+sudo chown -R "$(id -u):$(id -g)" .venv ui/node_modules ui/.next
+
+# Seed the virtualenv ourselves when it's missing or broken (fresh/stale volume).
+# Poetry would otherwise try to rmtree(.venv) to "recreate" it; .venv is a mount
+# point, so that only works when the failure is EBUSY — with any other error
+# (e.g. EACCES on the parent dir) poetry aborts. `venv --clear` empties the dir
+# in place without ever removing the mount point, so poetry just adopts it.
+if [ ! -x .venv/bin/python ]; then
+  echo "▸ .venv is empty or broken — seeding it with python3 -m venv…"
+  python3 -m venv --clear .venv
+fi
 
 # api/.env is gitignored, so a fresh clone won't have one. Seed dev defaults with
 # NO OpenAI key (the agents fall back to offline heuristics). db host/port here
