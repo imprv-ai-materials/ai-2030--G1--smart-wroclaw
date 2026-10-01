@@ -40,8 +40,9 @@ A step marked **Ask** ends your turn with its question. A step marked **Gate** e
 6. **compose.yaml and Tiltfile proposal. Gate.** List the reference's services and let the developer pick. Show both files in full, with each Tilt resource setting the env vars step 2 found missing (see **Run beside the reference**).
 7. **UI proposal. Gate.** Show the generator command the reference was built with (for Next.js: `pnpm create next-app@<reference major>` with flags that match the reference's layout), the `pnpm add` commands with the reference's ranges, one `pnpm pkg set` that sets every library of those `pnpm add` commands back to the reference's range (`pnpm add` saves `^<resolved version>` instead; write each as `'dependencies["<name>"]=<range>'` or `devDependencies`), `pnpm install`, and the tree with the same marks, including each bounded context's UI files.
 8. **Scaffold the UI.** Run the step 7 commands in order: the generator, `pnpm add`, `pnpm pkg set`, `pnpm install`. Then copy the reference's generic files over the generated ones and run the identifier map on them.
-9. **`.env`.** For every app whose reference counterpart reads a `.env`: when the new `.env` is absent, run `[ -e .env ] || cp .env.example .env`. When it exists, leave it as it is and list the keys it lacks compared with `.env.example`.
-10. **Start and check.**
+9. **Skills.** Run `bash <this skill's folder>/copy-skills.sh <reference> <new project>`. It copies each entry of the reference's `.claude/skills` into the new project's `.claude/skills` and skips an entry the new project already has. It prints one line per entry, with the entry's absolute path in the new project: `copied <path>` or `skipped <path>: it exists`. Run the identifier map on every file under each copied path (`find <path> -type f`), and list each skipped path in the step 12 report.
+10. **`.env`.** For every app whose reference counterpart reads a `.env`: when the new `.env` is absent, run `[ -e .env ] || cp .env.example .env`. When it exists, leave it as it is and list the keys it lacks compared with `.env.example`.
+11. **Start and check.**
     1. Run the reference's install, test, lint and build commands, without the steps step 2 found writing outside the app's folder.
     2. Save `docker ps -a --format '{{.Names}} {{.CreatedAt}}'`.
     3. Start the stack the way the reference does, with the new env on `PATH` (for Tilt: `env VIRTUAL_ENV=<env> PATH=<env>/bin:$PATH tilt up --port <free port>`).
@@ -50,12 +51,12 @@ A step marked **Ask** ends your turn with its question. A step marked **Gate** e
     6. Stop the stack: end the `tilt up` process, which runs the local resources, then run `tilt down`.
     7. Run `docker build` on every Dockerfile of every app. After a run, the mounted host folders hold files inside the build context.
     8. Search the copied files for the reference's domain words: its context names and the terms its domain files use.
-    9. When a check fails, run the same check on the reference. The same failure there makes it a reference problem, and step 11 still proposes its fix.
-11. **Report and fix. Gate.** Show the tree, how to start it (with the env on `PATH`), and every problem: failed checks, skipped steps, domain words left in copied files. Give every problem a proposed minimal fix, a reference problem too. After the yes, apply the approved fixes with commands and rerun the check that found each problem.
+    9. When a check fails, run the same check on the reference. The same failure there makes it a reference problem, and step 12 still proposes its fix.
+12. **Report and fix. Gate.** Show the tree, how to start it (with the env on `PATH`), and every problem: failed checks, skipped steps, domain words left in copied files. Give every problem a proposed minimal fix, a reference problem too. After the yes, apply the approved fixes with commands and rerun the check that found each problem.
 
 ## Rules
 
-**Copy means `cp`.** Copy a `[copy]` file with `cp` or `rsync`, then run the identifier map from step 4 on it with `sed`: package name, kebab name, env var prefix, display name. Never retype it. Change it further only through a gate: the `compose.yaml` and `Tiltfile` changes of step 6, and the fixes approved in step 11, applied with a command. Code that a `[new]` file takes verbatim from the reference follows the same rule.
+**Copy means `cp`.** Copy a `[copy]` file with `cp` or `rsync`, then run the identifier map from step 4 on it with `sed`: package name, kebab name, env var prefix, display name. Never retype it. Change it further only through a gate: the `compose.yaml` and `Tiltfile` changes of step 6, and the fixes approved in step 12, applied with a command. Code that a `[new]` file takes verbatim from the reference follows the same rule.
 
 **A bounded context gets the reference's layers, empty, in the API and in the UI.** In the API, create each layer as an empty module. Wire the context the way the reference wires its contexts (router mounted in the entrypoint, worker function list, a section in the composition root), with no routes, tables, models or functions. In the UI, create the files the reference keeps per context (step 2 lists them) as the smallest files that build: an empty module, or a page that renders only the context's name. Link them the way the reference links its contexts, for example as a navigation entry.
 
@@ -71,7 +72,7 @@ A step marked **Ask** ends your turn with its question. A step marked **Gate** e
 |---|---|
 | One proposal for the whole project | Three gates: api, compose and Tilt, ui |
 | Copying `pyproject.toml`, `poetry.lock`, `package.json` or `pnpm-lock.yaml` | `poetry init` and `poetry add`, the generator and `pnpm add` |
-| Rewriting a generic file to drop the reference's domain words | `cp`, `sed` on identifiers, then propose the rest at step 11 |
+| Rewriting a generic file to drop the reference's domain words | `cp`, `sed` on identifiers, then propose the rest at step 12 |
 | An empty `contexts_boundaries/` | Ask for contexts in step 3 and create their layers |
 | Contexts only in the API | Create the reference's per-context UI files too |
 | `name:` in `compose.yaml` but no `project_name` in the `Tiltfile` | Set both |
@@ -81,4 +82,4 @@ A step marked **Ask** ends your turn with its question. A step marked **Gate** e
 | Building only the images Tilt builds | `docker build` every Dockerfile after the stack ran |
 | Keeping the ranges `pnpm add` saved | Restore the reference's ranges with `pnpm pkg set` |
 | `tilt down` while `tilt up` still runs | End `tilt up` first |
-| Leaving a failed check as it is, or fixing it unasked | Propose its fix at the step 11 gate |
+| Leaving a failed check as it is, or fixing it unasked | Propose its fix at the step 12 gate |
